@@ -1,0 +1,9 @@
+# Real providers (not needed for --provider mock)
+anthropic>=0.40
+openai>=1.40
+# Optional: only for the independent second-judge (gemini) in the opinion robustness check
+google-genai>=1.0
+# Optional: dose-response chart in `analyze`
+matplotlib>=3.7
+# Optional: nicer test runner (the tests also run with plain `python3 test_grader.py`)
+pytest>=7
