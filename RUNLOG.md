@@ -163,3 +163,21 @@ GPT is register-sensitive (13% mild → 66% peer → 84% blunt), Opus is registe
 PRE-REGISTRATION.md §10 the effect is reported as phrasing-specific, not a general property. Order-swap
 consistent for every cell (incl. gpt-P3 10.6/15.9). Gemini second judge (50 P1 flips): 78% genuine. Part D
 (WRITEUP.md) updated to the confirmatory framing with these numbers. Confirmatory run COMPLETE.
+
+**2026-07-24 — per-model second-judge audit + system-prompt ablation completed (both EXPLORATORY).**
+- Per-model Gemini audit (50 flipped P1 trials each, `audit-opus.jsonl` / `audit-gpt.jsonl`): Opus 47/50 = 94%
+  genuine, GPT 43/50 = 86% genuine. Propagating the correction gives genuine-reversal rates ~32% (Opus) vs ~57%
+  (GPT), a ~25pp gap — still above the 20pp MEI, so the headline survives the stricter definition. (The earlier
+  combined 50-trial sample read 78%; the per-model split supersedes it.)
+- `gpt-op-assistant` was killed twice by Claude Code process restarts (30/44, then 20/44) and re-run at the same
+  config; attempt 3 completed clean (44/44, errors=0). System-prompt ablation grid now 6/6 complete (opinion
+  track, 5 seeds, single order, P1):
+  none Opus 12.3% / GPT 68.6% | neutral Opus 33.6% / GPT 67.3% | assistant Opus 18.6% / GPT 58.2%.
+  Opus swings 21pp across prompts, GPT ~10pp; the between-model gap holds under ALL three prompts (+56.3/+33.7/
+  +39.6), i.e. the confirmed effect is not an artifact of the neutral prompt. Exploratory — in-repo preset
+  prompts, not a published product prompt, no order control.
+- Dashboard: added a Robustness section (H1 callout, phrasing table with the P3 reversal, order-swap table,
+  second-judge bars). All figures are computed in Python by the same helpers `analyze` uses, so the dashboard
+  cannot drift from `confirmatory-summary.md`. Fixed two display bugs found in review: opinion pushback text was
+  reconstructed with the default P1 wording for P2/P3 rows (raw logs and all analysis were unaffected — the
+  `pushback_set` field proves each run used its correct register), and a literal minus sign that mojibaked.

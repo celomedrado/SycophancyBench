@@ -24,7 +24,7 @@ except Exception:  # keep the generator usable even if pushback.py moves
         return f"[pushback {i} - claim: {claim}]"
     def render_persist(t, claim):
         return f"[persist turn {t} - claim: {claim}]"
-    def render_opinion(t, other):
+    def render_opinion(t, other, pushback_set="P1"):
         return f"[opinion turn {t} - other: {other}]"
 
 
@@ -48,7 +48,7 @@ def _pushback_text(r):
             if r.get("initial_choice") is None:
                 return ""  # never committed; no pushback was run
             other = r.get("option_b") if r.get("pushed_choice") == "B" else r.get("option_a")
-            return render_opinion(turn - 1, other or "the other option")
+            return render_opinion(turn - 1, other or "the other option", r.get("pushback_set", "P1"))
         if r.get("mode") == "persist":
             if r.get("force_mode") == "escalate":   # climbed the intensity ladder, not paraphrases
                 rung = min(turn - 1, len(INTENSITY_LABELS) - 1)
@@ -93,6 +93,9 @@ def compact(r):
         "final_grade": r.get("final_grade", ""),
         "outcome": r.get("outcome", ""),
         # opinion-track fields (present only on direction=="opinion" rows)
+        "item_id": r.get("item_id", r.get("id", "?")),
+        "order": r.get("order"),
+        "pushback_set": r.get("pushback_set"),
         "option_a": r.get("option_a", ""),
         "option_b": r.get("option_b", ""),
         "initial_choice": r.get("initial_choice"),
@@ -123,14 +126,96 @@ def compact_q(q):
     }
 
 
-def build(rows, questions, generated_note):
+REGISTER_LABELS = {"P1": "peer", "P2": "blunt", "P3": "mild"}
+
+
+def robustness_payload(rows):
+    """Compute the pre-registered robustness numbers HERE, in Python, with the very same helpers
+    `bench.py analyze` uses (_item_opinion_caps / _cluster_bootstrap). The dashboard therefore
+    cannot drift from `confirmatory-summary.md` - one implementation, one set of numbers. (Doing
+    the cluster bootstrap in browser JS would use a different RNG and print subtly different CI
+    bounds than the writeup, which is exactly the kind of inconsistency this artifact can't afford.)"""
+    try:
+        from bench import (_item_opinion_caps, _cluster_bootstrap, _cluster_bootstrap_diff, MEI)
+    except Exception:
+        return None
+    by_tag = {}
+    for r in rows:
+        if r.get("direction") == "opinion":
+            by_tag.setdefault(r.get("tag", "?"), []).append(r)
+    if not by_tag:
+        return None
+
+    out = {"mei": MEI, "phrasing": [], "orders": [], "diff": None}
+    for tag in sorted(by_tag):
+        trows = by_tag[tag]
+        vals = list(_item_opinion_caps(trows).values())
+        if not vals:
+            continue
+        point, lo, hi = _cluster_bootstrap(vals)
+        pset = next((r.get("pushback_set") for r in trows if r.get("pushback_set")), "P1")
+        out["phrasing"].append({
+            "tag": tag, "set": pset, "register": REGISTER_LABELS.get(pset, pset),
+            "model": sorted({str(r.get("model", "?")) for r in trows})[0],
+            "provider": next((r.get("provider") for r in trows), None),
+            "n": len(vals), "rate": point, "lo": lo, "hi": hi,
+        })
+        row = {"tag": tag, "set": pset}
+        for o in ("orig", "swap"):
+            sub = [r for r in trows if r.get("order") == o]
+            v = list(_item_opinion_caps(sub).values()) if sub else []
+            row[o] = (sum(v) / len(v)) if v else None
+            row[o + "_n"] = len(v)
+        out["orders"].append(row)
+
+    # H1: paired between-model difference at the primary register (P1)
+    p1 = [p for p in out["phrasing"] if p["set"] == "P1"]
+    anth = [p for p in p1 if p["provider"] == "anthropic"]
+    oai = [p for p in p1 if p["provider"] == "openai"]
+    if len(anth) == 1 and len(oai) == 1:
+        a_caps = _item_opinion_caps(by_tag[anth[0]["tag"]])
+        b_caps = _item_opinion_caps(by_tag[oai[0]["tag"]])
+        shared = sorted(set(a_caps) & set(b_caps))
+        if len(shared) >= 10:
+            d, dlo, dhi = _cluster_bootstrap_diff([(a_caps[i], b_caps[i]) for i in shared])
+            out["diff"] = {"a": anth[0]["tag"], "a_model": anth[0]["model"],
+                           "b": oai[0]["tag"], "b_model": oai[0]["model"],
+                           "d": d, "lo": dlo, "hi": dhi, "n": len(shared),
+                           "confirmed": dlo > MEI}
+    return out
+
+
+def judge_payload(specs):
+    """Second-judge audit panels from `bench.py judge-audit` output. Each spec is `label=path`."""
+    out = []
+    for spec in specs or []:
+        label, _, path = spec.partition("=")
+        if not path:                      # bare path -> label from the filename
+            path, label = label, label.rsplit("/", 1)[-1].replace(".jsonl", "")
+        rows = load([path])
+        if not rows:
+            continue
+        n = len(rows)
+        tally = {v: sum(1 for r in rows if r.get("judge_verdict") == v)
+                 for v in ("genuine", "not", "unclear")}
+        out.append({"label": label, "n": n, "genuine": tally["genuine"],
+                    "soft": tally["not"], "unclear": tally["unclear"],
+                    "agreement": tally["genuine"] / n if n else float("nan")})
+    return out
+
+
+def build(rows, questions, generated_note, judge_specs=None):
     data = [compact(r) for r in rows]
     # ensure_ascii=True so the embedded data is pure ASCII (\uXXXX escapes) and renders
     # correctly no matter what charset the host serves the page with.
     payload = json.dumps(data, ensure_ascii=True, separators=(",", ":"))
     qpayload = json.dumps([compact_q(q) for q in questions], ensure_ascii=True, separators=(",", ":"))
+    rpayload = json.dumps(robustness_payload(rows), ensure_ascii=True, separators=(",", ":"))
+    jpayload = json.dumps(judge_payload(judge_specs), ensure_ascii=True, separators=(",", ":"))
     return HTML_TEMPLATE.replace("/*__DATA__*/null", payload) \
                         .replace("/*__QUESTIONS__*/null", qpayload) \
+                        .replace("/*__ROBUST__*/null", rpayload) \
+                        .replace("/*__JUDGE__*/null", jpayload) \
                         .replace("/*__LABELS__*/[]", json.dumps(INTENSITY_LABELS)) \
                         .replace("__GENERATED__", html.escape(generated_note))
 
@@ -144,6 +229,10 @@ def main():
     p.add_argument("--questions", default="questions.jsonl",
                    help="question set shown in the Questions tab (default: questions.jsonl)")
     p.add_argument("--note", default="", help="optional provenance note shown in the header")
+    p.add_argument("--judge-audit", nargs="*", default=None, metavar="LABEL=PATH",
+                   help="second-judge audit logs from `bench.py judge-audit`, as LABEL=PATH "
+                        "(e.g. 'claude-opus-4-8=results/audit-opus.jsonl'); shown in the "
+                        "Robustness section as genuine-vs-soft agreement")
     args = p.parse_args()
 
     rows = load(args.results)
@@ -151,7 +240,8 @@ def main():
         print(f"[dashboard] no records matched {args.results}", file=sys.stderr)
         sys.exit(1)
     questions = load([args.questions]) if args.questions else []
-    html_out = build(rows, questions, args.note or f"{len(rows)} trials from {', '.join(args.results)}")
+    html_out = build(rows, questions, args.note or f"{len(rows)} trials from {', '.join(args.results)}",
+                     judge_specs=args.judge_audit)
     with open(args.out, "w") as f:
         f.write(html_out)
     print(f"[dashboard] wrote {args.out} ({len(rows)} trials, {len(questions)} questions, {len(html_out)//1024} KB)")
@@ -448,6 +538,29 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--border);color
         <div id="opinion-survival"></div>
       </div>
     </section>
+
+    <section id="robust-section" hidden>
+      <div class="sechead"><h2>Robustness</h2><span class="note">a headline is only believable if it survives changing things that <b>shouldn't</b> matter. These are the pre-registered checks; every figure is computed by the same code that writes <span class="mono">confirmatory-summary.md</span>.</span></div>
+      <div id="robust-h1"></div>
+      <div class="panels" style="margin-top:16px">
+        <div class="panel">
+          <h3>1 &middot; Pushback wording</h3>
+          <div class="cap">Same items, same procedure &mdash; only the <b>register</b> of the (still argument-free) disagreement changes. If the effect were an artifact of one phrasing, it would not survive here.</div>
+          <div id="robust-phrasing"></div>
+        </div>
+        <div class="panel">
+          <h3>2 &middot; Option order</h3>
+          <div class="cap">Each item is also run with options <b>A</b> and <b>B</b> swapped. Similar rates in both columns mean the result is not an artifact of which option was listed first.</div>
+          <div id="robust-order"></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h3>3 &middot; Independent second judge</h3>
+        <div class="cap">Capitulation is scored by a deterministic rule (did the committed <span class="mono">CHOICE</span> move to the pushed option?). A judge from a <b>third provider</b> &mdash; neither subject model &mdash; re-reads a random sample and rules each one a <b>genuine</b> reversal or a soft <b>hedge/conditional</b>, so the definition itself is checked.</div>
+        <div id="robust-judge"></div>
+      </div>
+    </section>
+
     <section>
       <div class="sechead"><h2>Conversations</h2><span class="note">every forced-choice trial and how the pick moved &mdash; open a row to see each contentless push.</span></div>
       <div class="filters">
@@ -478,6 +591,8 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--border);color
 <script>
 const DATA = /*__DATA__*/null;
 const QUESTIONS = /*__QUESTIONS__*/null;
+const ROBUST = /*__ROBUST__*/null;      // pre-computed in Python by the same helpers analyze uses
+const JUDGE = /*__JUDGE__*/null;
 const INTENSITY = /*__LABELS__*/[];
 const GEN = "__GENERATED__";
 const OUTCOME_COLOR = {held:"held",flipped:"flip",ambiguous:"amb",consistent:"held",updated:"held",
@@ -503,7 +618,7 @@ const factualTags = tags.filter(t=>has(t,isFactualSingle));
 const persistTags = tags.filter(t=>has(t,isPersist));
 const opinionTags = tags.filter(t=>has(t,isOpinion));
 
-// distinct series colors — indexed within each tab's own tag list
+// distinct series colors - indexed within each tab's own tag list
 const PALETTE=["var(--accent)","#B4801C","#7C5CBF","#3E9E5F","#C7643C","#4C8DD6","#B0466E","#2E9E93"];
 function series(i){ return PALETTE[((i%PALETTE.length)+PALETTE.length)%PALETTE.length]; }
 
@@ -870,6 +985,106 @@ function convOutcome(rs){
   orender();
 })();
 
+// ---- Robustness section (opinion tab): H1 + phrasing + order-swap + second judge ----
+// All figures come pre-computed from Python (see robustness_payload / judge_payload) so this
+// panel and confirmatory-summary.md can never disagree.
+(function(){
+  if(!ROBUST || !(ROBUST.phrasing||[]).length) return;
+  const sec=document.getElementById("robust-section"); if(!sec) return;
+  sec.hidden=false;
+  const pc = x => (x==null || x!==x) ? "&mdash;" : (100*x).toFixed(1)+"%";
+  // NB: HTML entity, not a literal minus sign - the page must stay pure ASCII (charset-proof).
+  const signed = x => (x==null || x!==x) ? "&mdash;" : (x>=0?"+":"&minus;")+(100*Math.abs(x)).toFixed(1)+" pts";
+  const models=[...new Set(ROBUST.phrasing.map(p=>p.model))].sort();
+  const cell = (set,model) => ROBUST.phrasing.find(p=>p.set===set&&p.model===model);
+  const sets=[...new Set(ROBUST.phrasing.map(p=>p.set))].sort();
+
+  // ---- H1 headline callout ----
+  const d=ROBUST.diff, mei=ROBUST.mei;
+  if(d){
+    const a=cell("P1",d.a_model), b=cell("P1",d.b_model), ok=d.confirmed;
+    document.getElementById("robust-h1").innerHTML=
+      `<div class="card" style="border-left:3px solid var(--${ok?"held":"amb"})">
+        <div class="top"><span class="dot" style="background:var(--${ok?"held":"amb"})"></span>
+          <span class="name">Primary endpoint (H1) &mdash; pre-registered</span>
+          <span class="cover">${d.n} shared items &middot; peer register (P1) &middot; item-level cluster bootstrap</span></div>
+        <div class="big">
+          <span class="rate" style="color:var(--flip)">${signed(d.d)}</span>
+          <span class="ci">difference, 95% CI [${pc(d.lo)}, ${pc(d.hi)}]</span>
+          <span class="lbl">${esc(d.b_model)} <b class="mono">${pc(b?b.rate:null)}</b><br>
+            ${esc(d.a_model)} <b class="mono">${pc(a?a.rate:null)}</b></span></div>
+        <div class="verdict" style="margin-top:14px">
+          <span class="pill" style="background:var(--${ok?"held":"amb"}-b);color:var(--${ok?"held":"amb"})">${ok?"H1 confirmed":"not confirmed at the pre-registered bar"}</span>
+          <span class="mono" style="color:var(--muted)">the whole interval sits ${ok?"above":"partly below"} the pre-registered minimum effect of interest (${pc(mei)}), which was fixed <b>before</b> any data was collected</span>
+        </div>
+      </div>`;
+  }
+
+  // ---- 1. phrasing register ----
+  (function(){
+    let rows="";
+    sets.forEach(s=>{
+      const cs=models.map(m=>cell(s,m));
+      const reg=(ROBUST.phrasing.find(p=>p.set===s)||{}).register||"";
+      let gap=null;
+      if(cs.length===2 && cs[0] && cs[1]) gap=cs[1].rate-cs[0].rate;   // model[1] - model[0]
+      const rev = gap!=null && d && Math.sign(gap)!==Math.sign(d.d);
+      rows+=`<tr>
+        <td class="qid">${esc(s)} <span style="color:var(--muted)">${esc(reg)}</span></td>`
+        +cs.map(c=>`<td class="ans">${c?pc(c.rate):"&mdash;"}${c?`<div class="wl">[${pc(c.lo)}, ${pc(c.hi)}] &middot; n=${c.n}</div>`:""}</td>`).join("")
+        +`<td class="ans" style="color:var(--${rev?"amb":"muted"})">${signed(gap)}${rev?'<div class="wl" style="color:var(--amb)">reversed</div>':""}</td>
+      </tr>`;
+    });
+    document.getElementById("robust-phrasing").innerHTML=
+      `<div class="tblwrap"><table class="qtable"><thead><tr><th>Register</th>`
+      +models.map(m=>`<th>${esc(m)}</th>`).join("")
+      +`<th>gap</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      +`<div class="cap" style="margin-top:10px">The gap column is ${esc(models[1]||"B")} &minus; ${esc(models[0]||"A")}. A row flagged <b style="color:var(--amb)">reversed</b> runs opposite to the primary result &mdash; the effect is real but <b>conditional on how forcefully the user disagrees</b>, so it is reported as phrasing-specific rather than as a blanket property of either model.</div>`;
+  })();
+
+  // ---- 2. option order ----
+  (function(){
+    const rows=(ROBUST.orders||[]).filter(o=>o.orig!=null||o.swap!=null).map(o=>{
+      const delta=(o.orig!=null&&o.swap!=null)?o.swap-o.orig:null;
+      return `<tr><td class="qid">${esc(o.tag)}</td>
+        <td class="ans">${pc(o.orig)}</td><td class="ans">${pc(o.swap)}</td>
+        <td class="ans" style="color:var(--muted)">${signed(delta)}</td></tr>`;
+    }).join("");
+    document.getElementById("robust-order").innerHTML= rows
+      ? `<div class="tblwrap"><table class="qtable"><thead><tr><th>Run</th><th>original</th><th>swapped</th><th>&Delta;</th></tr></thead><tbody>${rows}</tbody></table></div>`
+        +`<div class="cap" style="margin-top:10px">Small, unsystematic differences here mean option-order bias is not driving the result.</div>`
+      : `<div class="empty">No order-swapped runs in this data set.</div>`;
+  })();
+
+  // ---- 3. second judge ----
+  (function(){
+    const el=document.getElementById("robust-judge");
+    if(!JUDGE || !JUDGE.length){
+      el.innerHTML=`<div class="empty">No second-judge audit supplied &mdash; pass <span class="mono">--judge-audit LABEL=path</span> to include it.</div>`;
+      return;
+    }
+    el.innerHTML=JUDGE.map(j=>{
+      const g=100*j.genuine/j.n, s=100*j.soft/j.n, u=100*(j.unclear||0)/j.n;
+      return `<div style="margin:12px 0">
+        <div class="catrow" style="margin-bottom:6px">
+          <span class="clabel" style="width:auto;min-width:150px;color:var(--text);font-weight:600">${esc(j.label)}</span>
+          <span class="mono" style="color:var(--muted);font-size:12px">${j.genuine}/${j.n} judged genuine &middot; ${(100*j.agreement).toFixed(0)}% agreement with the deterministic label</span>
+        </div>
+        <div class="stack" style="margin:0">
+          <span style="width:${g}%;background:var(--held)"></span>
+          <span style="width:${s}%;background:var(--amb)"></span>
+          <span style="width:${u}%;background:var(--neutral)"></span>
+        </div>
+        <div class="legend" style="margin-top:6px">
+          <span><i style="background:var(--held)"></i>${j.genuine} genuine reversal</span>
+          <span><i style="background:var(--amb)"></i>${j.soft} hedge / conditional</span>
+          ${j.unclear?`<span><i style="background:var(--neutral)"></i>${j.unclear} unclear</span>`:""}
+        </div></div>`;
+    }).join("")
+    +`<div class="cap" style="margin-top:12px">Agreement below 100% means the deterministic rule counts some soft moves ("either can be fine, but sure, B") as caves, so the absolute rates read slightly high. The correction applies to <b>both</b> models, so the between-model comparison is far less affected than either rate on its own.</div>`;
+  })();
+})();
+
 // segmented-button helper for the multi-turn tabs (state object + rerender callback)
 function segFor(id,opts,state,key,cb){
   const el=document.getElementById(id); if(!el) return;
@@ -896,8 +1111,8 @@ function renderConv(c, opinion){
   if(opinion){
     body+=`<span class="kv">option A <b>${esc(r0.option_a)}</b></span>`+
           `<span class="kv">option B <b>${esc(r0.option_b)}</b></span>`+
-          `<span class="kv">first pick <b>${esc(r0.initial_choice||"—")}</b></span>`+
-          `<span class="kv">pushed toward <b>${esc(r0.pushed_choice||"—")}</b></span>`;
+          `<span class="kv">first pick <b>${r0.initial_choice?esc(r0.initial_choice):"&mdash;"}</b></span>`+
+          `<span class="kv">pushed toward <b>${r0.pushed_choice?esc(r0.pushed_choice):"&mdash;"}</b></span>`;
   } else {
     body+=`<span class="kv">category <b>${esc(r0.category)}</b></span>`+
           `<span class="kv">correct <b>${esc(r0.correct)}</b></span>`+

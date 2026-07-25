@@ -233,19 +233,25 @@ in tension with clean ground truth).
 We ran the opinion set under three system prompts — `none` (no system message), `neutral`, and an
 `assistant`-style prompt — at 5 seeds (exploratory: single order, P1 phrasing, not the pre-registered design):
 
-| System prompt | Opus | GPT |
-|---|---|---|
-| none | 12.3% | 68.6% |
-| neutral | 33.6% | 67.3% |
-| assistant | 18.6% | *(completing)* |
+| System prompt | Opus | GPT | gap (GPT − Opus) |
+|---|---|---|---|
+| none (no system message) | 12.3% | 68.6% | +56.3 |
+| neutral | 33.6% | 67.3% | +33.7 |
+| assistant | 18.6% | 58.2% | +39.6 |
 
-The system prompt moves the two models **very differently**. **Opus is scaffolding-sensitive** — its
-capitulation nearly triples from `none` (12%) to `neutral` (34%), i.e. part of Opus's (already lower) caving is
-*induced by the wrapper prompt*, not intrinsic. **GPT is scaffolding-robust** — ~67% under both `none` and
-`neutral`, so its high rate is a property of the model at any prompt tested here. That is a real, model-dependent
-answer to "model vs. product" on the opinion track: for Opus the deployment prompt matters; for GPT it barely
-does. This is exploratory (single order, in-repo preset prompts rather than a published product prompt, not
-pre-registered); a confirmatory, product-prompt version is the natural next study.
+Two things stand out. First, **the scaffolding matters much more for Opus than for GPT**: Opus swings 21 points
+across the three prompts (12.3% → 33.6%), nearly tripling from no system message to a neutral one, so a
+substantial part of Opus's (already lower) capitulation is *induced by the wrapper prompt* rather than intrinsic
+to the model. GPT moves about half as much (10 points, 68.6% → 58.2%) and stays high throughout — its
+capitulation is closer to a property of the model itself at every prompt tested. Second, and more important for
+the main result: **the between-model gap survives all three prompts** (+56.3, +33.7, +39.6), so the confirmed
+effect is not an artifact of the neutral system prompt we happened to run the confirmatory study under.
+
+Read carefully, this is a partial answer to "model or product?" — the *level* of Opus's caving is
+prompt-dependent, the *ordering* between models is not. It is exploratory (single option order, 5 seeds, P1
+phrasing, and in-repo preset prompts rather than a published product system prompt, so it is not the
+model-vs-deployed-product comparison); a confirmatory version using a published product prompt, with order
+control, is the natural next study.
 
 ---
 
@@ -286,7 +292,9 @@ of the pushback — barely moving when the user is hesitant, caving hard when th
 while Opus stays near a third regardless of register. So the honest one-liner is not "GPT is more sycophantic"
 but "GPT is more sensitive to how forcefully the user disagrees: under confident pushback it capitulates far
 more than Opus; under mild pushback, slightly less." That conditionality would have been invisible without the
-frozen P1/P2/P3 registers — and it is a caution against any single-phrasing sycophancy score.
+frozen P1/P2/P3 registers — and it is a caution against any single-phrasing sycophancy score. Note the contrast
+with the system prompt (§3.3): the gap is sensitive to *pushback wording* but survives all three *system
+prompts* we tested, so "which register" is the load-bearing condition, not "which scaffolding."
 
 **Limitations (state these with the numbers).**
 - **Sampling is non-reproducible.** Default sampling, no seed; seeds are independent draws, not replays. This
