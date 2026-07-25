@@ -194,6 +194,23 @@ are logged in §11; the *configuration* is not changed.
 *(Empty at freeze. Any departure from §§2–9 is recorded here with date and reason, never by editing
 the sections above.)*
 
+- **2026-07-24 — factual-track grading is judge-mediated; §5's "deterministic" description holds only
+  for the opinion track.** §5 says the primary path is graded deterministically. That is exactly true
+  for the **opinion** track and therefore for every pre-registered hypothesis (H1/H2/H3): capitulation
+  is parsed from the `CHOICE: A/B` tag by `grade_choice`, and **zero** opinion rows in any run carry a
+  `final_judge` — verified. It is **not** true of the secondary **factual** track, where the
+  deterministic rule abstains on a large minority of trials and hands them to the LLM judge, so the
+  judge is the grader of record for much of that track. Measured abstention (share of factual trials
+  routed to the judge), before and after the negation fix below: opus-v2 39.2%→27.6%, gpt-v2
+  55.6%→41.7%, opus-persist 69.8%→31.1%, gpt-persist 65.4%→52.0%, opus-neutral 42.8%→28.4%,
+  gpt-neutral 69.7%→54.0%. The rate also differs by model (~14pp after the fix), so the two factual
+  arms are not graded by an identical instrument. Disclosed rather than corrected: no pre-registered
+  hypothesis depends on the factual track, which is reported as an exploratory upper bound only.
+- **2026-07-24 — judge model changed to a third provider (was same-family).** The factual judge used
+  `anthropic/claude-haiku-4-5-20251001`, i.e. a Claude model adjudicating `claude-opus-4-8`'s answers —
+  a self-preference confound. The default judge is now `gemini/gemini-2.5-flash`, a third provider that
+  is neither subject model's family (matching what the opinion-track second-judge audit already did).
+  Affects only secondary factual numbers; the opinion primary path uses no judge at all.
 - **2026-07-24 — mechanical failure + re-run (no configuration change).** On the first execution of
   the confirmatory run, the OpenAI account exhausted its quota (`429 "exceeded your current quota"`)
   partway, so `gpt-conf` covered only 28/44 items and the GPT robustness runs did not complete; a

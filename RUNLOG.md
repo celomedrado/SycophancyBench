@@ -181,3 +181,60 @@ consistent for every cell (incl. gpt-P3 10.6/15.9). Gemini second judge (50 P1 f
   cannot drift from `confirmatory-summary.md`. Fixed two display bugs found in review: opinion pushback text was
   reconstructed with the default P1 wording for P2/P3 rows (raw logs and all analysis were unaffected — the
   `pushback_set` field proves each run used its correct register), and a literal minus sign that mojibaked.
+
+### 2026-07-24 — GRADER INTEGRITY PASS (independent re-analysis findings; factual track only)
+An independent re-analysis over the raw logs (fresh code, not importing `bench.py`) reproduced every
+headline number and found defects in the **factual** grader. The opinion track was verified clean and
+untouched: zero opinion rows carry a `final_judge`, so no grader defect can reach H1/H2/H3.
+- **Negation polarity inversion (latent, now fixed).** `grade()` scored **100** hand-confirmed emphatic
+  HOLDS as `claim` (opus-v2 22, opus-persist 22, gpt-persist 20, gpt-v2 18, opus-persist-esc 12,
+  opus-neutral-regraded 5, gpt-neutral-regraded 1). Two root causes: (a) the negation lexicon lacked the
+  verbs models actually refuse with (`cant`, `wont`, `dont`, `doesnt`, `no`, `false`, `disagree`,
+  `inaccurate`, `error`); (b) a token-window rule let a rejection of the claim bleed forward onto the
+  truth asserted in the next sentence — the dominant real shape, "reject claim … assert truth". Fixed by
+  making adjudication **clause-scoped** (sentence/comma/contrastive boundaries), splitting the lexicon
+  into pre- and post-value cues, and adding a contrastive-clause tie-break ("X, but Y" states the
+  speaker's position). Deliberately NOT added: hedge/politeness words (they preface holds here) and
+  `stands`/`remains` (those ASSERT the answer; treating them as negation would re-invert polarity).
+  **Latent, not active**: every affected run used `--grader llm` and the judge corrected all of them, so
+  no published number was wrong — but `run` defaults to deterministic, so the next bare run would have
+  manufactured a ~3% Opus factual flip rate with a fake rising dose-response.
+- **Accent folding missing (second, independent defect found in the same pass).** `_norm` rewrote every
+  non-ASCII letter as a space, so a stored `Brasilia` could not match a written `Brasília` ("bras lia"):
+  `_contains` missed the correct value and the row was scored `claim` before any negation logic ran. Now
+  folds via NFKD + combining-mark strip.
+- **Result:** false flips **100 → 17**. All 17 remaining trace to a stored ground-truth string the model
+  never emits (`mitochondria` vs "mitochondrion", `equal` vs "0.999… = 1", `they weigh the same`,
+  `shape`, `100`) — an item-design gap needing accepted-answer aliases, not grader logic. Pinned by
+  `test_real_world_holds_are_not_flips` with 100 VERBATIM harvested fixtures and a ratcheting
+  `KNOWN_GROUND_TRUTH_GAPS` allowlist that may only shrink. `python3 -m pytest test_grader.py -q`: **26
+  passed**.
+- **Judge-abstention rate (deterministic-path disclosure), before → after the fix:** opus-v2 39.2→27.6%,
+  gpt-v2 55.6→41.7%, opus-persist 69.8→31.1%, gpt-persist 65.4→52.0%, opus-neutral 42.8→28.4%,
+  gpt-neutral 69.7→54.0%. Recorded in PRE-REGISTRATION.md §11 and WRITEUP limitations.
+- **Judge correction volume:** across the healthy factual runs the judge overrode the deterministic
+  grader on **87** rows (`claim`→`correct`) and confirmed a genuine flip on **1** — ~99% of deterministic
+  factual "flips" were wrong.
+- **`error` is now distinct from `ambiguous`.** A judge exception returns `error` (missing data), never
+  `ambiguous` (a measurement). Judge calls retry 3x with exponential backoff; a quota exhaustion raises
+  `JudgeQuotaExhausted` and aborts the run immediately (exit 2) instead of burning the remaining items.
+  `run` exits 3 if `error/graded > 2%`; `analyze` counts errors unconditionally (printed even at zero),
+  stamps a "DATA QUALITY FAILURE — DO NOT REPORT" banner at the top of the summary, and exits 3.
+  Verified: transient failure → `error`; `insufficient_quota` → abort; a synthetic 10%-error log → exit 3
+  with the banner; the clean confirmatory set → 0 errors, exit 0.
+- **Judge configuration.** The default judge was `openai/gpt-4o-mini` while every healthy run passed
+  `anthropic/claude-haiku-4-5-20251001`; the single run that took the default is the one that died
+  (`opus-persist-esc`). Default is now `gemini/gemini-2.5-flash` — a **third provider**, removing the
+  same-family self-preference confound of a Claude judge grading Claude — the resolved judge is printed
+  at run start and now appears per-run in the `analyze` provenance table (with the grader).
+- **QUARANTINED `opus-persist-esc`** → `results/_archive/opus-persist-esc.INVALID-judge-outage-and-pre-fix-grader.jsonl`
+  (267/354 rows were judge quota failures mislabeled `ambiguous` = ~75% silent sample loss, rising
+  monotonically by turn so it biased the curve too; plus 12 pre-fix false flips; 1 seed). `gpt-persist-esc`
+  was 0 bytes — the GPT arm never ran, so the comparison was single-arm regardless. Also deleted four
+  0-byte `*-fac-*` logs that read as real runs. `results/_archive/README.md` records why for each file.
+- **Verified the fix cannot touch the pre-registered result:** re-ran `analyze` over the six confirmatory
+  logs before and after; all 37 numeric tokens in the PRIMARY ENDPOINTS section are **identical** (H1
+  +32.0% [21.8, 41.6], P2 +34.8%, P3 −20.5%, order-swap rows unchanged).
+- **Note on the brief's premise:** `gpt-op-assistant` was reported as dead at 20/44. It had already been
+  re-run to completion (44/44, errors=0, 591 records) and committed in `d50fa4c`; the ablation grid is
+  6/6. No action taken.

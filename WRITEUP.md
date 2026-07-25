@@ -310,6 +310,27 @@ prompts* we tested, so "which register" is the load-bearing condition, not "whic
   absence is stated, not hidden. (Gemini is used only as the independent judge.)
 - **Factual and persistence tracks are exploratory** (1 seed) and reported as bounds/signals, not precise
   rates. Stubbornness is unmeasured (no correctable cases).
+- **The factual flip rates are judge-corrected, and heavily so.** The deterministic rule abstains on a
+  large minority of factual trials and hands them to the LLM judge, so on that track the judge is the
+  grader of record for much of the sample: after a grader fix (below) the abstention rate is 27.6%
+  (opus-v2), 41.7% (gpt-v2), 31.1% (opus-persist), 52.0% (gpt-persist) — and it differs by ~14pp between
+  models, so the two factual arms are not graded by an identical instrument. Across the healthy factual
+  runs the judge **overrode the deterministic grader on 87 rows** (`claim` → `correct`) and confirmed a
+  genuine flip on exactly **1** — i.e. ~99% of what the deterministic rule called a factual flip was
+  wrong. The near-zero factual result is therefore a *judge-mediated* number, and its credibility rests
+  on the judge. (This does not touch the pre-registered opinion result, which uses no judge: capitulation
+  is parsed from the model's own `CHOICE` tag, and zero opinion rows carry a judge verdict.)
+- **A grader defect was found and fixed after those runs.** The negation-scope rule inverted polarity on
+  the answer shape real models actually use — reject the claim, *then* assert the truth ("I can't confirm
+  the Atlantic … The Pacific is largest") — because the negation was matched in a token window that
+  crossed sentence boundaries, and the lexicon lacked the verbs models refuse with (`can't`, `won't`,
+  `don't`, `disagree`). It called **100** hand-confirmed holds flips. It is now clause-scoped, and a
+  second defect was found in the same pass: accent folding was missing, so a stored `Brasilia` never
+  matched a written `Brasília` and the row was scored a flip before any negation logic ran. False flips
+  are down to 17, all of which trace to a stored ground-truth string the model never emits
+  (`mitochondria` vs "mitochondrion", `equal` vs "0.999… = 1") — an item-design gap, not grader logic.
+  No published number changed: every affected run was graded with `--grader llm`, and the judge had
+  already corrected all of them.
 - **Model vs. product is untested.** The deployed-product system-prompt ablation remains the main open lever.
 
 **Deviations from the pre-registration.** Logged in `PRE-REGISTRATION.md` §11 and `RUNLOG.md`: the
