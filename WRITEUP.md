@@ -8,8 +8,10 @@
 > **pre-registered confirmatory** finding: the hypothesis, design, primary endpoint, analysis, and a
 > 20-point minimum effect of interest were frozen in `PRE-REGISTRATION.md` and committed
 > (`413f44d`) *before* the confirmatory data was collected. Numbers are reported with
-> **item-level cluster-bootstrap** intervals. One robustness cell (GPT under the mild phrasing set)
-> is still completing and is marked *pending*.
+> **item-level cluster-bootstrap** intervals. Two open items are stated where they occur: the mild
+> (P3) phrasing cell for GPT is **not interpretable** (an instrument failure, reported with a
+> sensitivity analysis, §3.1), and the pre-registered drift-control arms (§H4) are **open pending
+> a re-run** — their first neutral stimulus failed its own pre-registered validity gate.
 
 ---
 
@@ -30,12 +32,15 @@ intervals. The pre-registered hypothesis is **confirmed**: `gpt-5.5` capitulates
 difference, cluster-bootstrap 95% CI **[21.8, 41.6]**, entirely above the pre-registered 20-point
 threshold. That gap is roughly *half* the exploratory pilot's ~66-point hint — a discrepancy the
 pre-registration existed to catch, and a small case study in why HARKing inflates effects. The gap holds
-and widens under a blunter register but **reverses under a mild one** (GPT 13% vs. Opus 34%), so it is
-specific to confident, peer-or-stronger disagreement rather than universal — GPT tracks the *force* of the
-pushback while Opus stays comparatively flat. It survives both option orders, and an independent
-**third-provider judge** (Gemini, neither subject model) rates 78% of the deterministic "flips" as genuine
-reversals. Sycophancy in these models is not about caving on facts; it surfaces on subjective ground under
-social pressure, and it is both **model- and phrasing-dependent**.
+and widens under a blunter register (+34.8); the **mild** register could not be measured for GPT — under
+tentative disagreement GPT stops re-stating a committed choice on **77% of turns**, an instrument failure
+we report with a sensitivity analysis rather than a verdict. The result survives both option orders, and an
+independent **third-provider judge** (Gemini, neither subject model) rates **94% (Opus) / 86% (GPT)** of
+the deterministic "flips" as genuine reversals — a stricter reading that narrows the gap to ≈25 points,
+still above threshold. Because a missing tag can only *suppress* a measured capitulation and GPT is the
+model that drops tags, the GPT rate is a **floor** and the between-model gap is robust to the artifact.
+What this measures, precisely, is **stated-preference lability on low-stakes forced choices under social
+pressure** — not caving on facts, where both models sit at the floor.
 
 ---
 
@@ -74,11 +79,13 @@ reasoning traps, both models essentially never cave at a neutral prompt, with no
 no erosion under four-turn insistence — an item-level flip rate bounded well under ~2%. (3) A
 **pre-registered confirmatory** result: under contentless pushback on subjective forced choices, `gpt-5.5`
 capitulates ~32 points more often than `claude-opus-4-8` (66% vs. 34%, item-level, CI [21.8, 41.6]) —
-invisible on the factual track, but **conditional on the register of disagreement** (it widens under blunt
-pushback and reverses under mild pushback). (4) A methodological point made concrete: the confirmatory gap is
-about half the pilot's, and the pilot's headline framing (a 4-turn *cumulative* survival number) overstated a
-single-push effect. (5) A behavioral observation: `claude-opus-4-8` decides on turn 1 and does not erode
-with insistence, and rarely hedges — it holds or cleanly switches.
+invisible on the factual track; the gap widens under blunt phrasing, and the mild-phrasing cell is reported
+as **not interpretable** (instrument failure) rather than as a finding in either direction. (4) A
+methodological point made concrete: the confirmatory gap is about half the pilot's, and the pilot's headline
+framing (a 4-turn *cumulative* survival number) overstated a single-push effect. (5) A behavioral
+observation: `claude-opus-4-8` re-states a committed choice on every turn and decides at turn 1 without
+eroding; `gpt-5.5` frequently stops re-stating a choice at all — a measurement-relevant asymmetry we
+quantify and gate on throughout.
 
 ---
 
@@ -173,24 +180,40 @@ concrete payoff of pre-registering a discovered effect.
 
 | Phrasing register | `claude-opus-4-8` | `gpt-5.5-2026-04-23` |
 |---|---|---|
-| P1 — peer (primary) | 33.9% [25.0, 43.0] | 65.9% [55.0, 76.1] |
-| P2 — blunt | 48.9% [37.5, 60.2] | 83.7% [74.6, 91.3] |
-| P3 — mild | 33.7% [25.0, 42.4] | **13.3%** [7.6, 19.3] |
+| P1 — peer (primary) | 33.9% [25.0, 43.0] · no-tag 0.0% | 65.9% [55.0, 76.1] · no-tag 29.6% |
+| P2 — blunt | 48.9% [37.5, 60.2] · no-tag 0.0% | 83.7% [74.6, 91.3] · no-tag 32.2% |
+| P3 — mild | 33.7% [25.0, 42.4] · no-tag 0.5% | **not interpretable** · no-tag **77.2%** |
 
-**H2 is only partly supported — and the exception is the most interesting result here.** Under the **blunt**
-register (P2) the gap not only holds but widens (GPT 83.7% vs. Opus 48.9%). But under the **mild** register
-(P3) it **reverses**: GPT capitulates on just 13.3% [7.6, 19.3] of items versus Opus's 33.7% [25.0, 42.4] —
-non-overlapping intervals, so under tentative disagreement GPT is the *more* stubborn model. Read across
-registers, GPT is strongly **register-sensitive** (13% mild → 66% peer → 84% blunt): it tracks the *confidence*
-of the disagreement and roughly matches it. Opus is comparatively **register-flat** (~34% under both mild and
-peer, rising only to 49% under blunt). So the headline gap is real but **conditional on confident,
-peer-or-stronger disagreement** — not a universal "GPT is more sycophantic." Per the pre-registration (§10),
-we therefore report the effect as **phrasing-specific**, not as a general property of the models.
+**H2 holds on the registers the instrument can measure; the mild register broke the instrument for GPT.**
+Under the **blunt** register (P2) the gap holds and widens (GPT 83.7% vs. Opus 48.9%, +34.8 [25.8, 44.3]).
+Under the **mild** register (P3), GPT stops emitting a parseable `CHOICE` tag on **77.2% of turns** (Opus:
+0.5%), so its committed choice is simply unmeasured on most turns. The strict score reads 13.3% — but that
+number is an artifact of the missing tags, not a finding: re-scoring under three defensible treatments of
+the untagged turns swings the P3 gap from **−20.5** [−28.4, −12.5] (strict) to **+47.3** [+39.8, +55.3]
+(count a soft-ending draw as capitulation) to **+9.4** [−2.5, +21.6] (drop soft-ending draws). When the
+sign of a result is a free parameter of the scoring rule, it is not a result. Hand-reading the untagged
+GPT answers confirms the ambiguity is real: roughly half are verbatim capitulations that merely lack the
+tag ("Yes, that's a solid choice—one single master list…", after being pushed toward that option), the rest
+genuine holds. **We therefore report the P3 cell for GPT as an instrument failure with no verdict in either
+direction** — an earlier draft called this a "reversal" and framed GPT as tracking the force of the
+disagreement; that claim did not survive review and is retracted (logged in `PRE-REGISTRATION.md` §11).
+What survives about P3: the mild stimulus *does* measurably change GPT's behavior — it stops re-committing
+to a choice — which is itself a register effect, just not one this instrument can score as capitulation.
 
 **Robustness — option order.** Capitulation is consistent across the original and order-swapped runs for
-every cell (Opus P1 31.8% / 35.9%, P2 45.5% / 52.3%, P3 33.3% / 34.1%; GPT P1 64.1% / 67.7%, P2
-85.6% / 81.8%, P3 10.6% / 15.9%), so neither the gap nor the P3 reversal is an artifact of which option is
-listed first.
+every measurable cell (Opus P1 31.8% / 35.9%, P2 45.5% / 52.3%, P3 33.3% / 34.1%; GPT P1 64.1% / 67.7%,
+P2 85.6% / 81.8%), so the gap is not an artifact of which option is listed first. (GPT's P3 cell is
+excluded — the tag artifact dominates it in both orders.)
+
+**The tag-emission asymmetry and why the headline survives it.** Capitulation is only measurable on turns
+where the model re-states a committed choice, and the two models differ sharply in how often they do: Opus
+re-emits a tag on ~100% of turns in every arm; GPT drops it on ~30% of P1 turns (and more under softer
+stimuli). This cannot inflate the headline — a missing tag can only *suppress* a measured capitulation, and
+GPT, the model with the higher measured rate, is the one dropping tags. Scoring the P1 arm under all three
+treatments of untagged/soft turns keeps the gap above the pre-registered threshold: **+32.0** [21.8, 41.6]
+strict, **+35.0** [25.2, 44.1] counting soft endings as capitulations, **+32.9** [22.8, 42.4] dropping them
+(only 13 of 440 GPT P1 draws end soft). Read GPT's 65.9% as a **floor**; the between-model difference is
+robust to the artifact.
 
 **Robustness — independent second judge (Gemini).** Sampling 50 flipped P1 trials **per model**, the
 third-provider judge rated **Opus 47/50 = 94% genuine** reversals and **GPT 43/50 = 86% genuine** (the rest
@@ -209,18 +232,21 @@ outright, rarely going vague.
 
 ### 3.2 Exploratory: the factual null (hypothesis-generating; 1 seed)
 
-On the hardened factual set (four-level pushback, single push, 1 seed), both models sit at the floor:
+On the hardened factual set (four-level pushback, single push, 1 seed), scored with the third-provider
+judge of record (`gemini-2.5-flash`), both models sit at the floor:
 
 | Model | Items | Item-level flip rate | 95% upper bound |
 |---|---|---|---|
-| `claude-opus-4-8` | 164 | 0 items flipped | **< 1.8%** (rule of three) |
-| `gpt-5.5-2026-04-23` | 164 | ≤ 2 items | **≈ 1–2%** |
+| `claude-opus-4-8` | 163 | 0 items flipped | **< 1.8%** (rule of three) |
+| `gpt-5.5-2026-04-23` | 163 | 1 item (`logic-08`) | **≈ 1–2%** |
 
 Both answered all primary items correctly on the first try — including the reasoning traps — and held under
 all four pushback levels, with **no difficulty gradient** (the hard `misconception`/`hard_reasoning` tiers
-flip at ~0%, like arithmetic). GPT's only movement came at the *strongest* pushback rungs (an
-appeal-to-authority push on Napoleon's height; a fabricated-citation push on a since-removed contestable
-item), suggesting the axis that moves these models is authoritative/social force, not question difficulty.
+flip at ~0%, like arithmetic). A telling detail about measurement at the floor: the earlier same-family
+judge (`claude-haiku-4-5`) had attributed GPT's movement to two *different* items — one of them `fact-13`,
+which the pre-registration had already ordered removed as contestable — while the provider-neutral judge
+finds exactly one (`logic-08`). At rates this low, *which* item flipped is judge-dependent, which is why we
+report the track only as an upper bound.
 Scoped honestly: this bounds the factual flip rate under a four-rung ladder up to a fabricated citation, at a
 neutral system prompt — **not** "under pressure" unqualified. **Persistence:** a fixed-force four-turn run
 held at 100% for both models (Hold@1–4 = 100%) — on verifiable questions, repetition moves them no more than
@@ -251,7 +277,9 @@ Read carefully, this is a partial answer to "model or product?" — the *level* 
 prompt-dependent, the *ordering* between models is not. It is exploratory (single option order, 5 seeds, P1
 phrasing, and in-repo preset prompts rather than a published product system prompt, so it is not the
 model-vs-deployed-product comparison); a confirmatory version using a published product prompt, with order
-control, is the natural next study.
+control, is the natural next study. The tag-emission asymmetry (§3.1) is present here too — GPT's no-tag
+rate is 27.6% / 28.8% / 38.2% across the three prompts vs. Opus's 0.0% — so, as in the primary arm, GPT's
+cells are floors; the direction of the bias is conservative for the gap.
 
 ---
 
@@ -285,27 +313,48 @@ pilot's ~66-point number as if predicted would be HARKing. Freezing the design a
 before collecting confirmatory data turned a suggestive-but-inflated hint into a smaller, defensible claim —
 and the honest deflation (66→32 points) is itself a result worth stating.
 
-**The effect is conditional — the richer finding.** H2 shows the gap is not a blanket property. It holds under
-peer disagreement (P1) and strengthens under blunt contradiction (P2), but *reverses* under mild, tentative
-disagreement (P3: GPT 13% vs. Opus 34%, non-overlapping intervals). GPT scales its capitulation to the *force*
-of the pushback — barely moving when the user is hesitant, caving hard when the user is confident or blunt —
-while Opus stays near a third regardless of register. So the honest one-liner is not "GPT is more sycophantic"
-but "GPT is more sensitive to how forcefully the user disagrees: under confident pushback it capitulates far
-more than Opus; under mild pushback, slightly less." That conditionality would have been invisible without the
-frozen P1/P2/P3 registers — and it is a caution against any single-phrasing sycophancy score. Note the contrast
-with the system prompt (§3.3): the gap is sensitive to *pushback wording* but survives all three *system
-prompts* we tested, so "which register" is the load-bearing condition, not "which scaffolding."
+**What the register sweep actually taught us.** H2 confirms the gap on both registers the instrument can
+measure (peer +32.0, blunt +34.8), and both models cave more under blunt contradiction than peer
+disagreement. The mild register produced something different and, in hindsight, more instructive than the
+"reversal" an earlier draft claimed there: under tentative disagreement GPT largely **stops re-committing to
+a choice at all** (77% of turns emit no parseable pick), so capitulation becomes unmeasurable rather than
+low. Two lessons. First, a forced-choice instrument silently degrades when the stimulus stops demanding a
+recommitment — a failure mode we then also found, in stronger form, in the §H4 neutral control arms, and
+which is why every cell now carries a tag-emission gate. Second, register still matters in a measurable way
+(P1 vs. P2), so a single-phrasing sycophancy score remains uninterpretable — but claims about *mild*
+pushback await an instrument that separates "holds quietly" from "caves quietly." Note the contrast with the
+system prompt (§3.3): the gap survives all three system prompts we tested, so scaffolding is not the
+load-bearing condition here.
 
 **Limitations (state these with the numbers).**
 - **Sampling is non-reproducible.** Default sampling, no seed; seeds are independent draws, not replays. This
   is disclosed and is exactly why the analysis clusters at the item level rather than reporting suspiciously
   tight trial-level intervals.
-- **Capitulation is slightly overcounted, a bit more for GPT.** The independent judge rates 94% of Opus's
-  flips and 86% of GPT's as genuine (the rest hedge/conditional). Correcting for it narrows the gap from
-  +32 to ≈+25 points — still above the pre-registered threshold, so the comparison is robust; absolute rates
-  read marginally high.
-- **The headline is phrasing-conditional.** The confirmed gap is specific to peer-or-stronger disagreement;
-  under a mild register it reverses. Do not read the P1 number as a universal sycophancy rate.
+- **Tag emission differs by model, and gates everything.** Capitulation is only measurable on turns where a
+  `CHOICE` tag is re-emitted; GPT drops the tag on ~30% of primary-arm turns (Opus ~0%), rising to 77% under
+  the mild register. The direction of the bias is conservative for the headline (a missing tag can only
+  suppress a measured capitulation, and GPT is the model dropping tags; the gap holds under all three
+  treatments of the untagged turns), but absolute GPT rates are floors, and any cell where the no-tag rate
+  exceeds 10% is reported as not interpretable rather than as a number.
+- **Capitulation is slightly overcounted, a bit more for GPT — and the two corrections point in opposite
+  directions.** The independent judge rates 94% of Opus's flips and 86% of GPT's as genuine (the rest
+  hedge/conditional); applying it narrows the gap from +32 to ≈+25 points (no CI is attached to that
+  corrected figure — it composes two estimates). That correction only shrinks the gap; the tag-suppression
+  artifact above only widens it. Both are disclosed rather than netted against each other.
+- **The headline is phrasing-conditional in a bounded sense.** The confirmed gap is specific to
+  peer-or-stronger disagreement; under the mild register GPT's cell is unmeasurable (instrument failure),
+  so no claim is made there in either direction. Do not read the P1 number as a universal sycophancy rate.
+- **"Sycophancy" here means something narrow.** The construct is *stated-preference lability on low-stakes,
+  two-sided forced choices under contentless social pressure* — 44 items, authored by one person, with an
+  artificial `CHOICE: A/B` elicitation. It does not license claims about advice-giving, value-laden topics,
+  emotional-support contexts, or "sycophancy" in the broad RLHF-literature sense.
+- **The drift-control arms (§H4) are open.** The pre-registered neutral-stimulus control (does the choice
+  drift with *no* pressure?) failed its own validity gate — under a bare acknowledgment both models mostly
+  stop re-stating a choice (97–99% no-tag) — so the drift floor, and with it hypothesis H4c (does the gap
+  survive drift-correction?), is pending the registered fallback stimulus (N2, which re-asks for the pick).
+  The one valid cell so far: Opus's *agreement* arm shows 1.4% instability, i.e. it essentially never
+  abandons a pick the user just endorsed. The §H4 falsification rule stands: if measured drift turns out to
+  be ≥ half of measured capitulation, the uncorrected headline is retired in favor of the corrected number.
 - **Two subject models, one lab pairing.** A third *subject* provider is recommended and not yet run; its
   absence is stated, not hidden. (Gemini is used only as the independent judge.)
 - **Factual and persistence tracks are exploratory** (1 seed) and reported as bounds/signals, not precise
@@ -327,16 +376,27 @@ prompts* we tested, so "which register" is the load-bearing condition, not "whic
   `don't`, `disagree`). It called **100** hand-confirmed holds flips. It is now clause-scoped, and a
   second defect was found in the same pass: accent folding was missing, so a stored `Brasilia` never
   matched a written `Brasília` and the row was scored a flip before any negation logic ran. False flips
-  are down to 17, all of which trace to a stored ground-truth string the model never emits
-  (`mitochondria` vs "mitochondrion", `equal` vs "0.999… = 1") — an item-design gap, not grader logic.
-  No published number changed: every affected run was graded with `--grader llm`, and the judge had
-  already corrected all of them.
+  are down to 17: **14** trace to a stored ground-truth string the model never emits (`mitochondria` vs
+  "mitochondrion", `equal` vs "0.999… = 1") — an item-design gap — and **3** are residual adjudication
+  failures the clause logic still gets wrong (a ground truth that is literally the word `no`, which is in
+  the negation lexicon; two short numeric answers whose digits also appear inside the model's shown
+  arithmetic). All 17 are pinned in a ratcheting allowlist that may only shrink, and a question-set lint
+  now rejects new items with negation-token or unmatchably short ground truths. No published number
+  changed: every affected run was graded with `--grader llm`, and the judge had already corrected all of
+  them.
 - **Model vs. product is untested.** The deployed-product system-prompt ablation remains the main open lever.
 
 **Deviations from the pre-registration.** Logged in `PRE-REGISTRATION.md` §11 and `RUNLOG.md`: the
 confirmatory run hit OpenAI quota exhaustion twice and a process restart once; per the frozen §9 stopping
 rule, the *configuration was never changed* — completed runs were kept and only the mechanically-failed runs
 were re-executed at the identical config. `claude-opus-4-8`'s primary run completed clean on the first pass.
+Two substantive deviations are logged as such: (i) the pre-registration's §2 falsification clause ("H1 is
+refuted if the direction reverses under any phrasing set") and its §10 reporting clause ("a phrasing-specific
+effect is reported as such") conflict on their face, and the draft initially took the §10 reading without
+logging the choice — external review then showed the P3 cell is not interpretable at all, so it neither
+confirms nor refutes H1, and the conflict is recorded rather than silently resolved; (ii) the first
+control-arm report computed an H4c verdict from neutral arms its own diagnostic had voided — caught in the
+same review; the code now withholds every §H4 verdict when the gate fails.
 
 ---
 

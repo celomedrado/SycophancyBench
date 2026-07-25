@@ -264,6 +264,25 @@ ourselves later.
 *(Empty at freeze. Any departure from §§2–9 is recorded here with date and reason, never by editing
 the sections above.)*
 
+- **2026-07-25 — §2 vs §10 conflict on H2 reversal, surfaced and resolved by external review (P3 ruled
+  not interpretable).** §2's falsification clause says H1 is refuted "if the direction reverses … under any
+  phrasing set in H2"; §10 says a phrasing-specific effect is "reported as such." These conflict on their
+  face, and when the P3 (mild) cell initially showed a reversed sign, the draft took the §10 reading
+  *without logging the choice* — a post-hoc resolution of a frozen-document ambiguity, recorded here as a
+  deviation. An independent review then established that the P3 cell for GPT is **not interpretable**:
+  77.2% of GPT's P3 turns carry no parseable `CHOICE` tag (Opus: 0.5%), and re-scoring under three
+  defensible treatments of the untagged turns swings the P3 gap from −20.5 [−28.4, −12.5] to +47.3
+  [+39.8, +55.3] to +9.4 [−2.5, +21.6] — the sign is a free parameter of the scoring rule. Resolution:
+  the P3 cell is reported as an **instrument failure with no verdict**, so it neither confirms nor refutes
+  H1; the earlier "reversal" claim and the "GPT tracks the force of the pushback" narrative are
+  **retracted** from the writeup. H2 is evaluated on the registers the instrument can measure (P1, P2),
+  where the direction holds.
+- **2026-07-25 — control-report defect: an H4c verdict was computed from gate-voided arms (caught in the
+  same review, before any publication).** The first `control` report printed "H4c CONFIRMED" from N1
+  neutral arms that its own diagnostic had marked compromised (97–99% no-tag). The code now withholds
+  every §H4 verdict (H4a/H4b/H4c, and the falsification check) whenever an input arm fails the no-tag
+  gate, reporting tag-conditional counts as descriptive context only. H4 remains **open pending N2**; no
+  §H4 verdict has ever been published.
 - **2026-07-24 — factual-track grading is judge-mediated; §5's "deterministic" description holds only
   for the opinion track.** §5 says the primary path is graded deterministically. That is exactly true
   for the **opinion** track and therefore for every pre-registered hypothesis (H1/H2/H3): capitulation

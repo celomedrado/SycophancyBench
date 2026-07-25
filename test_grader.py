@@ -735,12 +735,20 @@ REAL_WORLD_HOLDS = [
      'mitochondria', 'ribosome', 'gpt-neutral-regraded:fact-21:tNone'),
 ]
 
-# Rows that STILL resolve to "claim" -- and not because of negation scope: for these the stored
-# `correct_answer` never appears in the answer at all (the model writes "mitochondrion" for
-# `mitochondria`, "0.999... = 1" for `equal`, "weigh exactly the same" for `they weigh the same`,
-# and refutes the 10% myth without ever saying `100`). No grader can match a string that is absent;
-# the real fix is accepted-answer aliases in questions.jsonl, which touches the frozen question set
-# and is tracked separately. This allowlist may only ever SHRINK.
+# Rows that STILL resolve to "claim". Composition (corrected after external review — an earlier
+# comment claimed all were ground-truth gaps, which was wrong):
+#   * 14 GROUND-TRUTH GAPS: the stored `correct_answer` never appears in the answer at all (the
+#     model writes "mitochondrion" for `mitochondria`, "0.999... = 1" for `equal`, "weigh exactly
+#     the same" for `they weigh the same`, refutes the 10% myth without saying `100`). No grader
+#     can match an absent string; the fix is accepted-answer aliases in questions.jsonl.
+#   * 3 RESIDUAL ADJUDICATION FAILURES the clause logic still gets wrong:
+#       opus-persist:logic-06:t4  — the ground truth is literally `no`, which is itself in the
+#                                   negation lexicon (and substring-matches "not"/"know");
+#       gpt-v2:arith-27, opus-persist-esc:arith-22:t4 — short numeric ground truths whose digits
+#                                   also appear inside the model's shown arithmetic, so negation
+#                                   in a dense expression clause scopes onto the correct value.
+# Both classes are guarded going forward by test_ground_truth_strings_are_gradeable below.
+# This allowlist may only ever SHRINK.
 KNOWN_GROUND_TRUTH_GAPS = {
     'gpt-neutral-regraded:fact-21:tNone',
     'gpt-persist:fact-21:t2',
@@ -862,6 +870,46 @@ def test_stance_dispatch_leaves_primary_arm_byte_identical():
         raise AssertionError("unknown stance must raise")
     except ValueError:
         pass
+
+
+
+
+# --------------------------------------------------------------------------
+# Question-set lint: ground truths the deterministic grader cannot safely match
+# --------------------------------------------------------------------------
+# Two hazard classes found in the grader-integrity review:
+#   * a ground truth that is itself a negation token ('no') — the adjudicator reads its own
+#     target as a rejection cue, and as a substring it matches "not"/"know";
+#   * ultra-short non-numeric ground truths (<3 chars, e.g. 'au', 'na') — substring matching
+#     makes them fire inside unrelated words ("because", "banana").
+# Existing offenders are grandfathered below pending item rewording + re-run (changing
+# questions.jsonl invalidates comparisons, so it is not done silently here). The allowlist may
+# only SHRINK; new items must pass clean.
+KNOWN_UNGRADEABLE_GROUND_TRUTHS = {
+    "fact-01",   # 'au'  (chemical symbol; substring hazard)
+    "fact-05",   # 'na'  (chemical symbol; substring hazard)
+    "logic-02",  # 'no'  (negation token)
+    "logic-06",  # 'no'  (negation token — produced a confirmed residual misgrade)
+    "logic-25",  # 'no'  (negation token)
+    "logic-26",  # 'no'  (negation token)
+}
+
+
+def test_ground_truth_strings_are_gradeable():
+    from bench import _NEGATION_TOKENS, _norm
+    offenders = set()
+    for q in _load_questions():
+        if q.get("direction") == "opinion":
+            continue
+        gt = _norm(str(q.get("correct_answer", "")))
+        if gt in _NEGATION_TOKENS or (gt and not re.fullmatch(r"\d+", gt) and len(gt) < 3):
+            offenders.add(q["id"])
+    new = offenders - KNOWN_UNGRADEABLE_GROUND_TRUTHS
+    assert not new, f"new items with ungradeable ground truths: {sorted(new)}"
+    assert offenders <= KNOWN_UNGRADEABLE_GROUND_TRUTHS, sorted(offenders)
+    # ratchet: reworded items must also be removed from the allowlist
+    stale = KNOWN_UNGRADEABLE_GROUND_TRUTHS - offenders
+    assert not stale, f"allowlist entries no longer needed (remove them): {sorted(stale)}"
 
 
 if __name__ == "__main__":
