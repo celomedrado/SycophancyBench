@@ -100,3 +100,66 @@ executed *after* that commit, at the frozen configuration.
 - STOPPED here for the pre-registration freeze commit before any real confirmatory (Part C) run.
 
 <!-- Part C (confirmatory) entries go below, AFTER the pre-registration commit hash is recorded. -->
+
+### 2026-07-23 — Part C CONFIRMATORY run (frozen commit `413f44dfce09cd8834ed933efc64c9b14386d3e0`)
+Pre-registration frozen at the commit above **before** this run (proof of freeze). Executed ONCE at the
+frozen configuration, no peeking (the full P1+P2+P3 set was committed and runs regardless of interim
+results):
+- **PRIMARY (H1):** opinion, P1 phrasing, both option orders, 5 seeds — `opus-conf` (claude-opus-4-8),
+  `gpt-conf` (gpt-5.5-2026-04-23). Deterministic `grade_choice` on the primary path (no judge).
+- **ROBUSTNESS (H2):** P2 (blunt) + P3 (mild), 3 seeds, both orders — `{opus,gpt}-conf-p2`, `{opus,gpt}-conf-p3`.
+- **Second judge:** Gemini `gemini-2.5-flash` on a sample of ≥50 P1 flipped trials → `conf-judge-audit.jsonl`.
+- Analysis: item-level cluster-bootstrap (`confirmatory-summary.md`). Ran concurrently with the exploratory
+  batch `b2imcgjqr`; any rate-limited/skipped trials are re-run at the SAME config per PRE-REGISTRATION.md §9.
+
+**Mechanical outcome (2026-07-24) — partial; re-run pending (§9, no config change):**
+- `opus-conf` (PRIMARY, Anthropic): **COMPLETE and clean** — 44/44 items, both orders, 5 seeds, 440
+  conversations, 0 errors. **Kept as the confirmatory primary Opus data.**
+- `gpt-conf` (PRIMARY, OpenAI): **INCOMPLETE** — OpenAI returned `429 "exceeded your current quota"`
+  after 28/44 items (263/440 conversations). The account ran out of credits. Quarantined to
+  `results/_archive/gpt-conf.INCOMPLETE-openai-quota-28of44.jsonl`. **Must re-run once credits are restored.**
+- `opus-conf-p2` (P2 robustness, Anthropic): **INCOMPLETE** — Anthropic `RateLimitError` (transient,
+  caused by my running Part C concurrently with the exploratory batch), 16/44 items. Not a quota issue.
+  Quarantined to `results/_archive/opus-conf-p2.INCOMPLETE-ratelimit-16of44.jsonl`. Re-run on clean bandwidth.
+- `gpt-conf-p2`, `{opus,gpt}-conf-p3`: never completed (empty/absent) — OpenAI quota / batch stopped.
+- Root cause: OpenAI credit exhaustion (billing, needs top-up); the Anthropic misses were transient
+  rate-limits from concurrency (my call to run Part C alongside the exploratory batch). The exploratory
+  batch's `--grader llm` tail runs (`gpt-persist-esc`, `{opus,gpt}-fac-*`) failed for the same reasons.
+- **Re-run plan (SAME frozen config, no concurrency this time):** keep `opus-conf`; re-run `opus-conf-p2`,
+  `opus-conf-p3` (Anthropic, available now); re-run `gpt-conf`, `gpt-conf-p2`, `gpt-conf-p3` after OpenAI
+  credits are topped up. Then `judge-audit` (Gemini) + `analyze`. Appended here when done.
+
+**2026-07-24 — OpenAI credits restored; clean re-run attempted, interrupted by a process restart, relaunched.**
+Verified OpenAI quota restored and frozen executable code unchanged vs `413f44d`. First clean re-run reached
+`gpt-conf` 33/44 items, then the Claude Code process restarted and killed the background job (a mechanical
+interruption, not a config issue). Per the keep-complete / re-run-incomplete policy: `opus-conf` (44/44) kept
+intact; relaunched the incomplete set (`gpt-conf` full, `{opus,gpt}-conf-p2`, `{opus,gpt}-conf-p3`) + judge-audit
++ analyze at the same frozen config, teeing to `results/_partc_rerun.log` (restart-surviving record). Config unchanged.
+
+**2026-07-24 — CONFIRMATORY RESULTS (frozen commit `413f44d`; item-level, cluster-bootstrap 95% CI).**
+Complete & clean (errors=0): `opus-conf`, `gpt-conf` (both 44/44, P1), `opus-conf-p2`, `gpt-conf-p2` (P2),
+`opus-conf-p3` (P3). Incomplete: `gpt-conf-p3` reached only 15/44 (OpenAI quota re-exhausted, errors=176) →
+quarantined to `results/_archive/gpt-conf-p3.INCOMPLETE-openai-quota-15of44.jsonl`; H2's P3 arm for GPT is
+PENDING one more OpenAI top-up + re-run (same config).
+- **H1 (PRIMARY): CONFIRMED.** Item-level capitulation Opus 33.9% [25.0, 43.0] vs GPT 65.9% [55.0, 76.1];
+  difference GPT−Opus = **32.0%, cluster-bootstrap 95% CI [21.8%, 41.6%]** — entirely above the +20pp MEI.
+- **H2 (robustness):** P1 Opus 33.9% / GPT 65.9%; P2 Opus 48.9% / GPT 83.7% (direction holds under blunt
+  phrasing). P3: Opus 33.7% complete; GPT pending (see above).
+- **Order-swap:** capitulation consistent across original vs swapped order for every run (not an order artifact).
+- **Second judge (Gemini gemini-2.5-flash, 50 of 439 flipped P1 trials):** 39 genuine / 11 hedge-conditional /
+  0 unclear → **78% agreement** with the deterministic 'flipped' label; ~22% of deterministic flips are soft
+  (hedge/conditional), so the deterministic rate modestly overcounts genuine reversals — disclose in the writeup.
+- Context: the confirmatory GPT−Opus gap (~32pp) is much smaller than the exploratory pilot's ~66pp; the
+  pre-registration prevented overselling the pilot number. `confirmatory-summary.md` regenerated without the
+  partial gpt-P3.
+
+**2026-07-24 — gpt-conf-p3 completed (2nd OpenAI top-up); H2 finalized.** After the user topped up OpenAI a
+second time and verified quota, `gpt-conf-p3` re-ran clean to 44/44 (b5dkly3m7); `confirmatory-summary.md`
+regenerated with the full set. **H2 result — the effect is PHRASING-SPECIFIC:**
+- P1 peer: Opus 33.9% / GPT 65.9% (GPT > Opus, +32pp — primary, confirmed).
+- P2 blunt: Opus 48.9% / GPT 83.7% (GPT > Opus, gap widens).
+- P3 mild: Opus 33.7% [25.0, 42.4] / **GPT 13.3% [7.6, 19.3] — REVERSED** (Opus > GPT, non-overlapping CIs).
+GPT is register-sensitive (13% mild → 66% peer → 84% blunt), Opus is register-flat (~34%, →49% blunt). Per
+PRE-REGISTRATION.md §10 the effect is reported as phrasing-specific, not a general property. Order-swap
+consistent for every cell (incl. gpt-P3 10.6/15.9). Gemini second judge (50 P1 flips): 78% genuine. Part D
+(WRITEUP.md) updated to the confirmatory framing with these numbers. Confirmatory run COMPLETE.

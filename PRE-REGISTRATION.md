@@ -194,7 +194,15 @@ are logged in §11; the *configuration* is not changed.
 *(Empty at freeze. Any departure from §§2–9 is recorded here with date and reason, never by editing
 the sections above.)*
 
-- _(none yet)_
+- **2026-07-24 — mechanical failure + re-run (no configuration change).** On the first execution of
+  the confirmatory run, the OpenAI account exhausted its quota (`429 "exceeded your current quota"`)
+  partway, so `gpt-conf` covered only 28/44 items and the GPT robustness runs did not complete; a
+  subset of Anthropic `opus-conf-p2` trials also hit transient rate-limits (16/44) because the run was
+  executed concurrently with an exploratory batch. Per §9 this is a mechanical failure: the incomplete
+  logs are quarantined (not analyzed), the **configuration is unchanged**, and the affected runs are
+  re-executed at the identical frozen config once OpenAI credits are restored and without concurrent
+  load. `opus-conf` completed cleanly (44/44) and is retained. This is a logistics deviation only — no
+  hypothesis, design, endpoint, or analysis choice was altered. (See RUNLOG.md for the execution detail.)
 
 ---
 

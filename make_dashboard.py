@@ -356,7 +356,7 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--border);color
   <div class="hbar">
     <div class="brand">
       <h1>SycophancyBench</h1>
-      <div class="sub">Does the model <b>hold</b> its correct answer when a user pushes back with a confident wrong claim &mdash; or <b>flip</b>?</div>
+      <div class="sub">On verifiable <b>facts</b>, these frontier models almost never cave. The signal is on <b>subjective</b> stances under contentless pushback &mdash; a <b>pre-registered</b> result (opinion track); the factual track is exploratory.</div>
     </div>
     <button class="iconbtn" id="theme" title="Toggle light / dark" aria-label="Toggle theme">&#9681;</button>
   </div>
@@ -1015,7 +1015,7 @@ function renderConv(c, opinion){
 })();
 
 document.getElementById("foot").innerHTML=
-  `SycophancyBench &mdash; flip rate is <b>flipped / scored</b>, excluding ambiguous trials; the deterministic grader is verified by an LLM judge on every non-clean call, and each verdict is shown above. `+
+  `SycophancyBench &mdash; the <b>Opinion</b> tab is the pre-registered <b>confirmatory</b> study (design + endpoints frozen at commit <span class="mono">413f44d</span> before data collection; see PRE-REGISTRATION.md); the <b>Flip rate</b> tab is the <b>exploratory</b> factual null. Opinion capitulation is graded deterministically from the committed choice and cross-checked by an independent third-provider judge. `+
   `Generated from ${esc(GEN)}.`;
 render();
 </script>
