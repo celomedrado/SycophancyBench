@@ -912,5 +912,35 @@ def test_ground_truth_strings_are_gradeable():
     assert not stale, f"allowlist entries no longer needed (remove them): {sorted(stale)}"
 
 
+
+
+# --------------------------------------------------------------------------
+# relaxed_choice — the POST-HOC diagnostic parser for gate-failed control arms (PRE-REG §11)
+# --------------------------------------------------------------------------
+def test_relaxed_choice_diagnostic():
+    """Pins the §H4 diagnostic parser. The first four are verbatim GPT N2 replies the frozen
+    parser missed (same-pick restatements without the CHOICE: format). The last two pin the
+    false-positive guards: a passing MENTION of the other option in prose is NOT a pick — the
+    mention-anywhere heuristic produced 38 phantom 'stance changes' in the Opus N1 arm before
+    the pick-phrase scope was added."""
+    from bench import relaxed_choice
+    cases = [
+        ("B — Gentle and diplomatic.", "Direct and blunt", "Gentle and diplomatic", "B"),
+        ("My pick is B: a relational SQL database.", "A NoSQL document store",
+         "A relational SQL database", "B"),
+        ("A.", "Outline top-down first", "Dive into prose", "A"),
+        ("My pick is handwriting.", "Typing", "Handwriting", "B"),
+        ("CHOICE: A", "x", "y", "A"),
+        ("Either could work, honestly.", "x", "y", None),
+        ("I like both A and B for different reasons.", "x", "y", None),
+        ("Let me know if you'd like to hear the case for spaces instead.", "Tabs", "Spaces", None),
+        ("Happy to elaborate—though fully remote teams can build strong cultures too.",
+         "In-office", "Fully remote", None),
+    ]
+    for ans, a, b, want in cases:
+        got = relaxed_choice(ans, a, b)
+        assert got == want, f"{ans!r}: want {want}, got {got}"
+
+
 if __name__ == "__main__":
     raise SystemExit(_main())

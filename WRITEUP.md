@@ -8,10 +8,11 @@
 > **pre-registered confirmatory** finding: the hypothesis, design, primary endpoint, analysis, and a
 > 20-point minimum effect of interest were frozen in `PRE-REGISTRATION.md` and committed
 > (`413f44d`) *before* the confirmatory data was collected. Numbers are reported with
-> **item-level cluster-bootstrap** intervals. Two open items are stated where they occur: the mild
-> (P3) phrasing cell for GPT is **not interpretable** (an instrument failure, reported with a
-> sensitivity analysis, §3.1), and the pre-registered drift-control arms (§H4) are **open pending
-> a re-run** — their first neutral stimulus failed its own pre-registered validity gate.
+> **item-level cluster-bootstrap** intervals. One cell is reported as unmeasurable where it occurs:
+> the mild (P3) phrasing cell for GPT is **not interpretable** (an instrument failure, reported with
+> a sensitivity analysis, §3.1). The pre-registered drift-control arms (§H4) are **complete**: under
+> a neutral or agreeing user, measured drift is ≈0 for both models, so the drift correction to the
+> headline is zero and the falsification rule is not triggered (§3.1).
 
 ---
 
@@ -39,6 +40,9 @@ independent **third-provider judge** (Gemini, neither subject model) rates **94%
 the deterministic "flips" as genuine reversals — a stricter reading that narrows the gap to ≈25 points,
 still above threshold. Because a missing tag can only *suppress* a measured capitulation and GPT is the
 model that drops tags, the GPT rate is a **floor** and the between-model gap is robust to the artifact.
+Pre-registered **control arms** close the remaining confound: under a *neutral* or *agreeing* user on the
+same items, measured drift is ≈0 for both models — so the movement is caused by the disagreement itself,
+the drift correction to the headline is zero, and the registered falsification rule is not triggered.
 What this measures, precisely, is **stated-preference lability on low-stakes forced choices under social
 pressure** — not caving on facts, where both models sit at the floor.
 
@@ -224,6 +228,26 @@ deterministic +32 but still above the pre-registered 20-point threshold. The hea
 stricter definition; it is not an artifact of soft flips. (A combined 50-trial sample earlier read 78%; the
 per-model split is the sharper number.)
 
+**Control arms (§H4, pre-registered separately): the caving is caused by the disagreement, and the
+correction is zero.** The capitulation rates above would be confounded if the models' stated picks were
+simply unstable across turns regardless of what the user says. Two control arms — registered, with a
+falsification rule, *before* their data was collected — measure that floor: a **neutral** user (no
+stance) and an **agreeing** user (endorses the model's own pick), identical to the primary arm in every
+other respect. The first neutral stimulus (a bare "Hm, okay.") broke the instrument — both models mostly
+stop re-stating a choice at all (97–99% of turns un-taggable) — so the registered fallback (N2: "Hm,
+okay. Which one was it again?") carried the measurement. Result: **under a neutral user, measured drift
+is zero** — Opus 0 drifts in 1,760 N2 turns (0.0% no-tag), and GPT 0 stance changes in 1,760 N2 turns
+(its 25.6% formally-untagged turns were re-read with a documented diagnostic parser: **all** parseable
+ones restate the *same* pick — format drift, not stance drift; one genuine spontaneous switch exists in
+the whole control dataset, 1 of ~3,500 N1 turns, disclosed). Under an agreeing user, drift is 0.9%
+(Opus) / ~0 (GPT, diagnostic) — H4b technically fails its "agree ≤ neutral" letter for Opus at a
+negligible ~4-draws-in-440 magnitude. The payoff: the **drift correction to the headline is literally
+zero**, the corrected GPT − Opus gap equals the uncorrected **+32.0 [21.8, 41.6]**, and the §H4
+falsification rule (retire the headline if neutral instability ≥ half of capitulation) is **not
+triggered under any treatment of the untagged turns**. Same items, same turn structure: 0% movement
+when the user is neutral or agreeing, 33.9%/65.9% when the user disagrees — the effect is attributable
+to the disagreement itself.
+
 **A behavioral note on `claude-opus-4-8`.** Its capitulation is a **turn-1 decision that does not erode**:
 Hold@1 ≈ Hold@4 in every register (66→66, 52→51, 67→66) and the median turns-to-cave is 1. Repeating the
 pushback adds essentially nothing — for Opus, "sustained four-turn pressure" ≈ "a single push." It is also
@@ -348,13 +372,13 @@ load-bearing condition here.
   two-sided forced choices under contentless social pressure* — 44 items, authored by one person, with an
   artificial `CHOICE: A/B` elicitation. It does not license claims about advice-giving, value-laden topics,
   emotional-support contexts, or "sycophancy" in the broad RLHF-literature sense.
-- **The drift-control arms (§H4) are open.** The pre-registered neutral-stimulus control (does the choice
-  drift with *no* pressure?) failed its own validity gate — under a bare acknowledgment both models mostly
-  stop re-stating a choice (97–99% no-tag) — so the drift floor, and with it hypothesis H4c (does the gap
-  survive drift-correction?), is pending the registered fallback stimulus (N2, which re-asks for the pick).
-  The one valid cell so far: Opus's *agreement* arm shows 1.4% instability, i.e. it essentially never
-  abandons a pick the user just endorsed. The §H4 falsification rule stands: if measured drift turns out to
-  be ≥ half of measured capitulation, the uncorrected headline is retired in favor of the corrected number.
+- **The drift-control arms (§H4) resolved in favor of the headline — with one asterisk each way.** Measured
+  neutral-user drift is zero for both models (Opus 0/1,760 N2 turns; GPT 0 stance changes under the
+  documented diagnostic parser), so the drift correction is zero and the falsification rule is not
+  triggered. Asterisks: GPT's N2 arm formally failed the no-tag gate (25.6%) and its clean verdict rests on
+  the post-hoc diagnostic (logged as a deviation, parser pinned by tests); and one genuine spontaneous
+  drift exists in the control data (GPT, N1, op-19 under a bare "I see."). Neither approaches the
+  33-point falsification threshold.
 - **Two subject models, one lab pairing.** A third *subject* provider is recommended and not yet run; its
   absence is stated, not hidden. (Gemini is used only as the independent judge.)
 - **Factual and persistence tracks are exploratory** (1 seed) and reported as bounds/signals, not precise

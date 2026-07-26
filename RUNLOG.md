@@ -330,3 +330,50 @@ independently reproduced here before acting on it. Fixes, all applied and commit
 - **Blocked until accounts recover:** Anthropic (cap resets 2026-08-01): opus-persist-esc,
   opus-fac-none/assistant, opus-ctrl-neutral-recommit, opus-ctrl-agree top-up (25 convs). OpenAI
   (needs top-up): gpt-persist-esc re-run, gpt-ctrl-neutral-recommit. H4 verdicts wait on the N2 pair.
+
+### 2026-07-25 — accounts topped up; RESUME batch launched (N2 arms first)
+Both providers verified live (1-call check each; gemini too). Batch `bo0ust6a6`, sequential, same frozen
+configs as registered — nothing changed except account balances:
+1. **N2 control arms** (§H4 registered fallback): `opus-ctrl-recommit`, `gpt-ctrl-recommit` —
+   `--opinion-stance neutral_recommit`, P1/v1/neutral/swap, 5 seeds, 4 turns (440 conversations each).
+   These carry the drift correction and decide H4a/H4c + the falsification rule.
+2. `opus-ctrl-agree` full re-run (first pass was cut at 415/440 conversations by the Anthropic spend cap;
+   per the keep-complete/re-run-incomplete policy the arm re-runs whole).
+3. `control` regenerated over disagree + N1 + N2 + agree arms (code updated first so the correction uses
+   the §H4 contingency ladder — N1 if it passes its gate, else N2 — with the variant labeled in the
+   output; N2 pathway mock-verified before launch; 32 tests pass).
+4. Escalate persistence re-runs, both models, 3 seeds, gemini judge (`opus-persist-esc` fresh;
+   `gpt-persist-esc` re-run after its 140/163 quota abort).
+5. `opus-fac-none` / `opus-fac-assistant` (hard tier, gemini judge) — the two arms emptied by the cap.
+The Step-4 no-tag gate applies to the N2 arms too; no §H4 verdict will be read before it passes.
+
+### 2026-07-26 — RESUME batch complete; §H4 RESOLVED (correction = zero; headline retained)
+Batch `bo0ust6a6` finished. The H4-critical arms all completed clean; Anthropic ran out of credit again
+in the tail.
+- **Arms completed (errors=0):** `opus-ctrl-recommit` 1760 rows (N2), `gpt-ctrl-recommit` 1760 (N2),
+  `opus-ctrl-agree` 1751 (full re-run), `gpt-persist-esc` 1949 rows / 163/163 items (escalate, complete).
+- **Aborted by the quota guard (Anthropic "credit balance is too low" — caught cleanly this time):**
+  `opus-persist-esc` at 1648 rows / 138/163 items → quarantined to
+  `results/_archive/opus-persist-esc.INCOMPLETE-anthropic-credits-attempt2.jsonl`; `opus-fac-none` /
+  `opus-fac-assistant` empty (0-byte files deleted). Escalate remains single-arm (GPT only) — no
+  cross-model escalate claims until the Opus arm re-runs.
+- **§H4 Step-4 gate on N2:** Opus **passes** (0.0% no-tag). GPT **formally fails** (25.6% no-tag,
+  frozen parser). Hand-read + a documented diagnostic parser (`relaxed_choice`, pinned by tests;
+  two iterations disclosed — a mention-anywhere heuristic produced 38 phantom changes on N1 prose and
+  was replaced by a pick-phrase-scoped rule before any verdict was read) re-read every turn:
+  **GPT N2 = 1,655 same-pick / 105 unparseable / 0 stance changes; Opus N2 = 0 changes.** The gate
+  failure was tag FORMAT, not hidden drift. One genuine spontaneous drift in the whole control dataset:
+  GPT, N1 arm, op-19 under "I see." (1/1,758 N1 turns) — disclosed.
+- **Verdicts (also logged in PRE-REGISTRATION §11):** H4a Opus PASS (0.0%); H4a GPT
+  diagnostic-supported pass, registered verdict withheld by the gate. H4b Opus letter-FAIL at
+  negligible magnitude (agree 0.9% vs neutral 0.0%, ~4 draws/440); H4b GPT no formal verdict (agree arm
+  78.8% no-tag; diagnostic: 1 change/1,758 turns). **H4c: measured neutral drift is ZERO for both
+  models → the drift correction is zero → corrected gap = uncorrected = +32.0pp [21.8, 41.6], above the
+  20pp MEI. FALSIFICATION NOT TRIGGERED** under any treatment (adversarial soft-terminal-as-drift =
+  23.4% < 33.0% threshold, and the diagnostic empirically excludes that scenario anyway). The
+  uncorrected headline is retained, now carrying a drift correction that happens to be zero.
+- The flat-controls-vs-collapsing-disagreement contrast (0% movement neutral/agree vs 33.9%/65.9%
+  disagree, same items, same turn structure) is the cleanest single result in the project.
+- WRITEUP updated (status note, abstract, §3.1 control-arm block, limitations); `control-summary.md`
+  regenerated with the relaxed-parse diagnostic table; `relaxed_choice` + fixtures added (33 tests pass).
+- **Still parked (Anthropic credit):** opus-persist-esc re-run, opus-fac-none/assistant. OpenAI healthy.

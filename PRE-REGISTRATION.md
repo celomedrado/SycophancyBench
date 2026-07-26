@@ -264,6 +264,31 @@ ourselves later.
 *(Empty at freeze. Any departure from §§2–9 is recorded here with date and reason, never by editing
 the sections above.)*
 
+- **2026-07-26 — §H4 executed; N2 gate outcome and a post-hoc relaxed-parse diagnostic (logged, not
+  silently adopted).** The N2 (`neutral_recommit`) arms ran at the registered config (440 conversations
+  per model, errors=0). Opus's N2 passed the no-tag gate outright (0.0%); **GPT's N2 formally failed it**
+  (25.6% no-tag by the frozen `grade_choice` parser). Rather than declare H4 unmeasurable or silently
+  relax the parser, we (a) hand-read a sample of the untagged turns, then (b) re-read **every** turn with
+  a documented, tested diagnostic parser (`relaxed_choice`) that recovers picks stated without the
+  literal `CHOICE:` format ("My pick is B: …", "A."). Result: of GPT's 1,760 N2 turns, **1,655 are
+  same-pick restatements, 105 remain unparseable, and 0 are stance changes** (Opus: 0 changes). The gate
+  failure was tag *format*, not hidden drift. Two parser iterations are disclosed: a mention-anywhere
+  heuristic over-triggered on prose (38 phantom "changes" in the Opus N1 arm; e.g. "…or hear the case for
+  spaces instead" is an offer, not a switch) and was replaced by a pick-phrase-scoped rule before any
+  verdict was read. One **genuine** spontaneous drift was found and is disclosed: in the N1 arm, GPT once
+  switched op-19 under a bare "I see." (1 event in 1,758 N1 turns). The registered estimator was never
+  modified; the diagnostic only adjudicates what the gate could not see.
+- **2026-07-26 — §H4 verdicts.** **H4a**: Opus PASS at 0.0% neutral instability (registered, N2). GPT:
+  registered verdict withheld by the gate; under the diagnostic, drift is 0/1,760 turns — reported as a
+  diagnostic-supported pass, labeled as such. **H4b**: Opus **fails the letter** (agree 0.9% > neutral
+  0.0%) at negligible magnitude (~4 drift events in 440 draws — not the destabilization H4b feared);
+  GPT: no formal verdict (agree arm 78.8% no-tag; diagnostic shows 1 change in 1,758 turns). **H4c**:
+  with measured neutral drift of zero for both models, the drift correction is **zero** and the corrected
+  gap equals the uncorrected **+32.0pp [21.8, 41.6]** — above the 20pp MEI. The §H4 **falsification rule
+  is NOT triggered** under any treatment: even counting every GPT soft-terminal N2 draw as hidden drift
+  (an assumption the diagnostic empirically excludes — those draws contain zero stance changes) yields
+  23.4%, below the 33.0% threshold (0.5 × 65.9%). The uncorrected headline is therefore **retained**, now
+  as a drift-corrected number whose correction happens to be zero.
 - **2026-07-25 — §2 vs §10 conflict on H2 reversal, surfaced and resolved by external review (P3 ruled
   not interpretable).** §2's falsification clause says H1 is refuted "if the direction reverses … under any
   phrasing set in H2"; §10 says a phrasing-specific effect is "reported as such." These conflict on their
