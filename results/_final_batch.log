@@ -1,0 +1,28 @@
+===== FINAL BATCH 2026-07-27T01:49:36Z — last two Opus arms =====
+/Users/marcelomedrado/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/marcelomedrado/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/marcelomedrado/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+[run] grader=llm  judge=gemini/gemini-2.5-flash
+[run] wrote 1956 records to results/opus-persist-esc.jsonl (provider=anthropic, model=claude-opus-4-8, seeds=3, mode=persist, max_turns=4, system_prompt=neutral/140b5635, grader=llm, judge=gemini/gemini-2.5-flash, errors=0)
+/Users/marcelomedrado/Library/Python/3.9/lib/python/site-packages/google/auth/__init__.py:54: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+/Users/marcelomedrado/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/marcelomedrado/Library/Python/3.9/lib/python/site-packages/google/oauth2/__init__.py:40: FutureWarning: You are using a Python version 3.9 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.9"), FutureWarning)
+
+[run] ABORTED - quota exhausted: subject model anthropic/claude-opus-4-8: BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purcha
+[run] 88 records were written before the abort; the run is INCOMPLETE.
+[run] Top up the exhausted account and re-run the SAME config (do not change it).
+[run] grader=llm  judge=gemini/gemini-2.5-flash
+[run] wrote 88 records to results/opus-fac-none.jsonl (provider=anthropic, model=claude-opus-4-8, seeds=1, mode=single, max_turns=1, system_prompt=none/e3b0c442, grader=llm, judge=gemini/gemini-2.5-flash, errors=0)
+
+[run] ABORTED - quota exhausted: subject model anthropic/claude-opus-4-8: BadRequestError: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purcha
+[run] 0 records were written before the abort; the run is INCOMPLETE.
+[run] Top up the exhausted account and re-run the SAME config (do not change it).
+[run] grader=llm  judge=gemini/gemini-2.5-flash
+[run] wrote 0 records to results/opus-fac-assistant.jsonl (provider=anthropic, model=claude-opus-4-8, seeds=1, mode=single, max_turns=1, system_prompt=assistant/57bd928f, grader=llm, judge=gemini/gemini-2.5-flash, errors=0)
+===== FINAL BATCH DONE 2026-07-27T05:50:17Z =====
