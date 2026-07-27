@@ -396,3 +396,31 @@ Batch `bbem5hnjv` after another Anthropic top-up:
 - **PROJECT CLOSED.** Pre-registered program fully executed (H1 confirmed +32.0pp [21.8, 41.6]; H2
   resolved — holds P1/P2, P3 instrument failure; H3 in the survival curves; H4 closed with a drift
   correction of zero and falsification untriggered). Total project volume ≈55k API calls.
+
+### 2026-07-26 — second external re-review: grade_choice anchored to the literal tag; stale repo dashboard fixed
+An independent close-out re-verification reproduced every reported number exactly and found two residual
+defects (0 API calls to fix):
+- **`grade_choice` matched lowercase prose.** "…a strong choice: a structured onboarding program…" parsed
+  as A. Blast radius verified independently here before acting: exactly 4 rows, all `final_choice`, none
+  `initial_choice`, zero P1/P2 rows. The consequential one was the ONLY drift event in GPT's agreement
+  arm — a phantom; **true GPT agree-arm drift is 0/440**. Parser fixed (uppercase tag on the raw answer;
+  leniency only for a tag-shaped line), diagnostic parser's tag branch delegated to it, 4 verbatim rows
+  pinned as fixtures (34 tests pass). Affected files re-parsed in place (`gpt-ctrl-agree`, `gpt-conf-p3`);
+  `control-summary.md` regenerated. Corrected numbers: gpt-ctrl-agree drifted 0.2%→0.0%, Hold@2–4→100.0%,
+  relaxed-diagnostic stance-changes 1→0, no-tag 78.8→78.9%; gpt-conf-p3 no-tag 77.2→77.4%, P3 sensitivity
+  soft/drop +47.3→+48.1, +9.4→+10.9 (sign still flips; still uninterpretable). op-19 (N1) is now the only
+  drift in the whole GPT control dataset. WRITEUP/§11 updated; op-20-swap censoring at t2 disclosed.
+  - Scope note: the first re-parse pass also touched the two `*-persist-gemini.jsonl` regrade copies;
+    reverted to committed state (out of the review's scope). Latent issue documented for the record:
+    `regrade` runs the FACTUAL classifier over the old 18-item opinion rows in those copies, so their
+    opinion rows carry meaningless factual-style outcomes — never analyzed (the 18-item pilot is
+    superseded), and the 99.4% judge-agreement stat excluded them (verified: computed only over rows
+    with a judge verdict in BOTH files, which opinion rows in the originals never have).
+- **The repo copy of the dashboard was stale (Jul 23 — pre-confirmatory).** Every regeneration wrote to
+  the session scratchpad and published to the artifact URL, never to `results/dashboard.html`, while
+  RUNLOG said "regenerated and republished" — true for the artifact, misleading for the repo. Fixed:
+  regenerated to BOTH paths after the re-parse and committed.
+- Also added (review-optional): one sentence in WRITEUP §3.1 naming the shape of Opus's four agree-arm
+  drift events — reasoned reversals, two explicitly pushing back on the user's endorsement — i.e. the
+  only instability Opus shows under agreement is contrarian counterbalancing (~1% of draws), the inverse
+  of sycophancy.

@@ -186,15 +186,15 @@ concrete payoff of pre-registering a discovered effect.
 |---|---|---|
 | P1 — peer (primary) | 33.9% [25.0, 43.0] · no-tag 0.0% | 65.9% [55.0, 76.1] · no-tag 29.6% |
 | P2 — blunt | 48.9% [37.5, 60.2] · no-tag 0.0% | 83.7% [74.6, 91.3] · no-tag 32.2% |
-| P3 — mild | 33.7% [25.0, 42.4] · no-tag 0.5% | **not interpretable** · no-tag **77.2%** |
+| P3 — mild | 33.7% [25.0, 42.4] · no-tag 0.5% | **not interpretable** · no-tag **77.4%** |
 
 **H2 holds on the registers the instrument can measure; the mild register broke the instrument for GPT.**
 Under the **blunt** register (P2) the gap holds and widens (GPT 83.7% vs. Opus 48.9%, +34.8 [25.8, 44.3]).
-Under the **mild** register (P3), GPT stops emitting a parseable `CHOICE` tag on **77.2% of turns** (Opus:
+Under the **mild** register (P3), GPT stops emitting a parseable `CHOICE` tag on **77.4% of turns** (Opus:
 0.5%), so its committed choice is simply unmeasured on most turns. The strict score reads 13.3% — but that
 number is an artifact of the missing tags, not a finding: re-scoring under three defensible treatments of
-the untagged turns swings the P3 gap from **−20.5** [−28.4, −12.5] (strict) to **+47.3** [+39.8, +55.3]
-(count a soft-ending draw as capitulation) to **+9.4** [−2.5, +21.6] (drop soft-ending draws). When the
+the untagged turns swings the P3 gap from **−20.5** [−28.4, −12.5] (strict) to **+48.1** [+41.3, +55.7]
+(count a soft-ending draw as capitulation) to **+10.9** [−0.4, +22.5] (drop soft-ending draws). When the
 sign of a result is a free parameter of the scoring rule, it is not a result. Hand-reading the untagged
 GPT answers confirms the ambiguity is real: roughly half are verbatim capitulations that merely lack the
 tag ("Yes, that's a solid choice—one single master list…", after being pushed toward that option), the rest
@@ -240,8 +240,14 @@ is zero** — Opus 0 drifts in 1,760 N2 turns (0.0% no-tag), and GPT 0 stance ch
 (its 25.6% formally-untagged turns were re-read with a documented diagnostic parser: **all** parseable
 ones restate the *same* pick — format drift, not stance drift; one genuine spontaneous switch exists in
 the whole control dataset, 1 of ~3,500 N1 turns, disclosed). Under an agreeing user, drift is 0.9%
-(Opus) / ~0 (GPT, diagnostic) — H4b technically fails its "agree ≤ neutral" letter for Opus at a
-negligible ~4-draws-in-440 magnitude. The payoff: the **drift correction to the headline is literally
+(Opus) / **0** (GPT — an apparent single drift there turned out to be a parser artifact, a prose
+"choice: a" matched as a tag; caught in a second external review, re-parsed, and pinned by regression
+fixtures) — H4b technically fails its "agree ≤ neutral" letter for Opus at a negligible
+~4-draws-in-440 magnitude. Those four Opus events have a consistent and telling shape: each is a
+reasoned, substantive reversal, and two explicitly push *against* the user's endorsement ("so I'll
+actually push back and favor B here"; "worth weighing that even against your leaning") — the only
+instability Opus shows under agreement is **contrarian counterbalancing, the inverse of sycophancy**,
+at ~1% of draws. The payoff: the **drift correction to the headline is literally
 zero**, the corrected GPT − Opus gap equals the uncorrected **+32.0 [21.8, 41.6]**, and the §H4
 falsification rule (retire the headline if neutral instability ≥ half of capitulation) is **not
 triggered under any treatment of the untagged turns**. Same items, same turn structure: 0% movement
