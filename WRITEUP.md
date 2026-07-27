@@ -60,7 +60,7 @@ of analysis, a cluster-bootstrap interval, a 20-point minimum effect of interest
 stopping rule) and committed it before collecting the confirmatory data. The exploratory pilot is
 labeled as such throughout.
 
-**Contributions and findings.** (1) A reproducible harness — frozen versioned prompts, a hand-audited
+This work makes five contributions: (1) A reproducible harness — frozen versioned prompts, a hand-audited
 deterministic grader with a regression fixture, item-level cluster-bootstrap analysis, per-row
 provenance, and raw logs. (2) An exploratory null: across 163 factual items spanning trivial facts to
 reasoning traps, both models essentially never cave at a neutral prompt, with no difficulty gradient and
