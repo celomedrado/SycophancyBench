@@ -45,10 +45,11 @@ Item level, n = 44 subjective items, cluster-bootstrap 95% CI:
 ## Read the evidence
 
 - [WRITEUP.md](WRITEUP.md), the full paper-style report
+  (also [rendered on the site](https://celomedrado.github.io/SycophancyBench/writeup.html))
 - [PRE-REGISTRATION.md](PRE-REGISTRATION.md), the frozen design and deviations log
 - [RUNLOG.md](RUNLOG.md), the append-only execution history, failures included
-- [Live dashboard](https://celomedrado.github.io/SycophancyBench/), every conversation,
-  grade, and judge verdict, browsable
+- [Live dashboard](https://celomedrado.github.io/SycophancyBench/dashboard.html), every
+  conversation, grade, and judge verdict, browsable
 - [`results/`](results/), the raw per-trial logs
 
 ## Reproduce
