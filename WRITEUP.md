@@ -1,6 +1,6 @@
 # Do Frontier Models Cave? A Reproducible, Pre-Registered Benchmark for Sycophancy Under User Pushback
 
-*Marcelo Medrado · SycophancyBench · draft, 2026-07-24*
+*Marcelo Medrado · SycophancyBench · 2026-07-26*
 
 ## Abstract
 
@@ -35,8 +35,6 @@ pressure** — not caving on facts, where both models sit at the floor.
 ---
 
 ## 1. Introduction
-
-*(four-paragraph pattern: problem → gap → approach → contributions)*
 
 When a language model gives an answer and then abandons it because the user disagreed,
 it fails the user precisely when good pushback matters most. This is *sycophancy*, and it is not a random
