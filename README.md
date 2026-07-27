@@ -1,203 +1,81 @@
 # SycophancyBench
 
-**Measuring belief-capitulation rate across frontier chat models.**
+SycophancyBench measures what happens when a user pushes back with no argument at all:
+on factual questions, `claude-opus-4-8` and `gpt-5.5` almost never cave, even against a
+fabricated citation, while on subjective picks GPT abandons its stance on 65.9% of items
+versus 33.9% for Opus.
 
-When a language model gives you a correct answer and then abandons it the moment you push
-back — even though you're wrong — that's *sycophancy*. It's one of the most consequential
-behavioral failure modes in deployed assistants and one of the hardest for a user to notice,
-because it fails you precisely when you were already mistaken.
+## Headline (pre-registered primary endpoint)
 
-SycophancyBench turns that into a number. It asks a model factual questions it gets right,
-has a scripted "user" push back with a confident *wrong* claim at escalating intensity, and
-measures how often the model **flips**. It reports the result overall, by category, and as a
-**dose-response curve** across pushback intensity — and it pairs the flip rate with a
-**stubbornness** control, because a model that never flips might just be rigid rather than
-honest.
+Item level, n = 44 subjective items, cluster-bootstrap 95% CI:
 
-> Built by Marcelo Medrado as the capstone of a 60-day LLM-research curriculum (Day 59), and
-> as a working artifact for research-adjacent PM work on model behavior and evaluation.
+| Model | Capitulation under contentless disagreement |
+|---|---|
+| `claude-opus-4-8` | 33.9% [25.0, 43.0] |
+| `gpt-5.5-2026-04-23` | 65.9% [55.0, 76.1] |
+| **Gap (GPT minus Opus)** | **+32.0 [21.8, 41.6]**, entirely above the pre-registered 20-point minimum effect |
 
----
+## Three receipts
 
-## Why this is designed the way it is
+- **Controls.** With a neutral or agreeing user on the same items, measured drift is 0%
+  for both models. The movement is caused by the disagreement itself
+  ([control-summary](results/control-summary.md)).
+- **Facts.** Opus: 0 flips in 489 escalating-force trials ending at a fabricated
+  citation. GPT: Hold@4 = 98.8%.
+- **Honesty.** The mild-register GPT cell is reported as an instrument failure, not a
+  finding: GPT stops emitting a parseable choice on 77.4% of turns there, and re-scoring
+  the untagged turns can flip the sign, so no verdict is claimed in either direction.
 
-Sycophancy isn't a random quirk — it's a **predictable consequence of RLHF**. If a reward
-model is trained on human preferences and humans reward answers that agree with them, the
-optimized policy learns that agreement is rewarded. So the flip rate is partly a *fingerprint
-of each lab's preference optimization* and how hard their later training (e.g. Constitutional
-AI, explicit anti-sycophancy work) pushes back against it. That reframing is the whole point:
-we're not measuring a personality, we're measuring a training signal.
+## Why you can trust it
 
-Two metrics, and they only mean something **as a pair**:
+- The pre-registration (hypotheses, frozen stimuli, item-level analysis, 20-point
+  minimum effect, falsification rule) was committed at
+  [`413f44d`](PRE-REGISTRATION.md) BEFORE any confirmatory data was collected. The
+  control-arm hypotheses (section H4) were likewise frozen at `ad8004a`, and the batch
+  log that collected their data opens 32 seconds after that commit and stamps its hash
+  (`results/_batch_h4.log`).
+- Every deviation is logged append-only in PRE-REGISTRATION.md section 11, including
+  one retracted claim (the P3 "reversal") and two post-hoc parser fixes found by
+  external review.
+- An independent third-provider judge (Gemini, neither subject model) rates 94% (Opus)
+  and 86% (GPT) of the deterministic flips as genuine reversals; under that stricter
+  reading the gap is about 25 points, still above threshold.
+- Every number regenerates from the raw logs in `results/` (about 55k API calls).
 
-| Metric | Setup | Good behavior | What a bad score means |
-|---|---|---|---|
-| **Flip rate** (primary) | User asserts a **wrong** answer | Model **holds** | Model caves to social pressure — sycophancy |
-| **Stubbornness** (control) | User asserts the **correct** answer | Model **updates** | Model won't correct itself even when it should |
+## Read the evidence
 
-A model with a low flip rate *and* low stubbornness is calibrated. A model with a low flip
-rate and high stubbornness is just inflexible. Reporting only the first number would be
-misleading — which is exactly the kind of thing this benchmark exists to avoid.
+- [WRITEUP.md](WRITEUP.md), the full paper-style report
+- [PRE-REGISTRATION.md](PRE-REGISTRATION.md), the frozen design and deviations log
+- [RUNLOG.md](RUNLOG.md), the append-only execution history, failures included
+- [Live dashboard](https://celomedrado.github.io/SycophancyBench/), every conversation,
+  grade, and judge verdict, browsable
+- [`results/`](results/), the raw per-trial logs
 
----
-
-## Quick start
-
-```bash
-pip install -r requirements.txt        # or just `pip install matplotlib` for a mock dry-run
-
-# 1) Dry-run with the keyless mock (no API spend) — proves the pipeline end to end:
-python bench.py run --provider mock --model claude-mock --tag claude --seeds 5
-python bench.py run --provider mock --model gpt-mock    --tag gpt    --seeds 5
-python bench.py analyze --results "results/*.jsonl"
-
-# 2) Real run (set your keys first). Use --grader llm: real models answer in verbose prose
-#    that a substring grader misreads, so an LLM judge decides every case the deterministic
-#    grader can't cleanly call (see the grader note under "Methodology & rigor"). Current frontier models
-#    reject a custom --temperature, so it is omitted by default (each model's own sampling).
-export ANTHROPIC_API_KEY=sk-ant-...
-export OPENAI_API_KEY=sk-...
-python bench.py run --provider anthropic --model <claude-model-id> --tag claude --seeds 5 --grader llm
-python bench.py run --provider openai    --model <gpt-model-id>    --tag gpt    --seeds 5 --grader llm
-python bench.py analyze --results "results/*.jsonl"
-```
-
-`analyze` prints the tables, writes `results/summary.md`, and saves the dose-response chart to
-`results/dose_response.png`. See `examples/` for what the output looks like (generated from the
-**mock** provider — illustrative numbers only, not real model measurements).
-
----
-
-## The system-prompt ablation
-
-The headline numbers measure the *model* through the API with a minimal neutral prompt. But the
-chat products people actually use (ChatGPT, Claude.ai) wrap that same model in a large proprietary
-system prompt. So how much of the measured sycophancy is the model, and how much is the product
-scaffolding? That's a construct-validity question, and it's the one this ablation answers.
-
-`run` takes a `--system-prompt` flag. It accepts a preset, a path to a `.txt` file, or a literal
-string:
+## Reproduce
 
 ```bash
-# presets: neutral (default), none (send NO system message at all), assistant
-python bench.py run --provider anthropic --model <id> --tag claude-none    --system-prompt none    --seeds 5 --grader llm
-python bench.py run --provider anthropic --model <id> --tag claude-neutral --system-prompt neutral --seeds 5 --grader llm
-
-# a published product prompt, kept as a versioned file under prompts/
-python bench.py run --provider anthropic --model <id> --tag claude-product --system-prompt prompts/claude_dot_ai.txt --seeds 5 --grader llm
-
-python bench.py analyze --results "results/*.jsonl"
+pip install -r requirements.txt
 ```
 
-Every run stamps the prompt's label and an 8-character content hash onto every log row, and
-`analyze` surfaces them in a **Run provenance** table — so any result can be traced back to the
-exact scaffolding that produced it (`none` is always the empty-string hash `e3b0c442`). Keep the
-prompts you test in `prompts/` so the comparison is reproducible.
+Put keys in `.env` or the environment: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, and
+`GEMINI_API_KEY` (or `GOOGLE_API_KEY`) for the judge.
 
-> The keyless `mock` provider ignores system-prompt *content*, so flip rates won't move across
-> conditions in a dry-run — that's expected. The ablation only bites on real providers.
-
----
-
-## What's in here
-
-```
-questions.jsonl   the question set (245 items: 163 primary, 38 user-is-right controls, 44 opinion)
-pushback.py       the pushback scripts (fixed & versioned): 4-rung intensity ladder +
-                  persistence paraphrases + contentless opinion pushback
-providers.py      Claude / GPT / mock backends behind one get_response() call
-bench.py          the harness: `run` (play conversations) and `analyze` (metrics + chart)
-test_grader.py    regression tests for the grader + a gradeability check on every question
-prompts/          published system-prompt .txt files for the --system-prompt ablation
-examples/         sample output from a mock run, so you can see the shape of a result
-results/          your run logs land here (git-ignored except .gitkeep)
+```bash
+python3 bench.py run --provider anthropic --model claude-opus-4-8 --tag my-run \
+  --categories opinion --swap-options --seeds 5 --max-turns 4
+python3 bench.py analyze --results "results/my-run.jsonl"
+python3 test_grader.py   # zero-dependency test suite, 34 passing
 ```
 
-Every trial — initial answer, pushback, final answer, and the grader's decision — is written
-to the JSONL log. That's deliberate: **hand-audit a random sample of grader decisions** before
-you trust any headline number.
+The keyless dry run works without any API key: `--provider mock --model gpt-mock`.
 
----
+## Scope
 
-## Methodology & rigor (the part that makes it credible)
+This benchmark measures stated-preference lability on low-stakes forced choices under
+contentless social pressure, for two models from one lab pairing. It is not a universal
+sycophancy score. The factual track is exploratory and reported as an upper bound.
 
-This benchmark is built to survive the experiment-design pitfalls that make most quick
-evals worthless (Day 55 of the curriculum):
+## License and data note
 
-- **Prompt sensitivity is the #1 threat.** If the flip rate swings when you reword the
-  pushback, you measured your prompt, not the model. The pushback scripts are fixed and
-  versioned in `pushback.py`; change them and you must re-run everything. Publish the exact
-  prompts alongside results.
-- **Multiple seeds + confidence intervals — read the interval, not just the point.** `analyze`
-  reports a rough 95% Wilson interval but treats every item×seed×intensity trial as independent,
-  so it *understates* the true uncertainty when seeds are correlated. Current frontier models
-  reject a custom `temperature` (only their default is allowed) and Claude takes no `seed`, so
-  seed-to-seed variance comes only from default-sampling noise and can be small — check the
-  cross-seed spread in the logs before trusting a tight CI, and never report a point estimate
-  without it.
-- **A control set, not just the headline.** The `user_right` items catch the failure mode
-  where a low flip rate is really just stubbornness.
-- **A transparent, auditable grader — deterministic first, judge only where needed.** Grading is
-  a deterministic string/number match on short verifiable answers. But on real runs, verbose
-  prose defeats substring matching (a model holds firm while restating the wrong value to reject
-  it), so `--grader llm` routes every case the deterministic rule can't cleanly call to an LLM
-  judge and **logs its verdict on every row** — no *hidden* judge; it's opt-in and fully
-  auditable. The deterministic behavior is pinned by a labeled regression fixture in
-  `test_grader.py` (run `python3 test_grader.py`, no deps), which also checks every question is
-  gradeable. You can re-score past logs without re-running models via `bench.py regrade`. Restrict
-  questions to categories where "correct" is defensible (arithmetic, unit conversion, established
-  facts, simple logic, geography); drop anything contestable.
-- **Only push where there's something to flip.** Primary-track trials where the model's
-  *initial* answer was already wrong are recorded and excluded from the flip-rate denominator.
-- **Persistence has two force modes — keep both, they answer different questions.** `--max-turns N`
-  runs a multi-turn persistence track instead of the single-push sweep. *Fixed* force (default)
-  repeats the **same** reasoned doubt every turn, so only the turn count varies — a clean isolation
-  of the persistence mechanism (any decline is persistence, not a stronger message). `--escalate`
-  instead **climbs the intensity ladder** each turn (mild doubt → reasoned certainty → appeal to
-  authority → fabricated citation, then holds the top rung); it *deliberately confounds* turns ×
-  force and is **not** a clean ablation — it measures the realistic "combined-pressure ceiling" of a
-  frustrated user escalating an argument. Every row records `force_mode` (`fixed`|`escalate`), and in
-  escalate mode the turn's `intensity_label` marks which rung a flip happened on. The opinion track
-  never escalates — it stays contentless by construction.
-- **The opinion track is a separate construct — never averaged into the flip rate.** Forced-choice
-  subjective items (no ground truth) met with *contentless* disagreement measure capitulation to
-  social pressure, not factual sycophancy. It's reported in its own table with its own Wilson CI on
-  the cave rate.
-
-### Known limitations (state these in any writeup)
-
-- Verbose/hedged answers defeat substring grading — the reason `--grader llm` exists and the
-  hand-audit is non-negotiable. The judge is itself fallible; audit a sample of its verdicts too.
-- **On clean, easy facts at a neutral prompt, frontier models basically never cave** — a 1-seed
-  pilot of `claude-opus-4-8` vs `gpt-5.5` measured ~0% flips. The interesting signal is expected
-  to live in the *system-prompt ablation* and on harder, genuinely-persuadable items, not here.
-- **Stubbornness needs items the model gets wrong initially.** Strong models answer easy control
-  questions correctly on the first try, so there's nothing to "update" — measuring stubbornness
-  needs harder-but-verifiable items.
-- "Correct" is only clean on the constrained categories here; don't add opinion or frontier-of-
-  knowledge questions (and drop borderline items like "longest river," a contested Nile-vs-Amazon).
-- Two models keep it shippable; `providers.py` makes adding a third a few lines.
-- Model versions drift. Log the exact model id and run date; run each model in one window.
-
----
-
-## Growing this into the public artifact
-
-1. **Expand `questions.jsonl` to 150–200 items**, keeping the category balance and adding
-   more `control` items (aim for ~20% control).
-2. **Run ≥5 seeds** on the real Claude and GPT model ids you have access to.
-3. **Run the system-prompt ablation** — `none` vs `neutral` vs a published product prompt — to
-   separate model sycophancy from product-scaffolding sycophancy. This is the key
-   construct-validity check; publish the exact prompts under `prompts/`.
-4. **Hand-audit ~30 random grader decisions**; report the agreement rate.
-5. **Write it up**: the flip-rate table, the dose-response chart, the stubbornness pair, the
-   category breakdown — plus the RLHF framing and the honest limitations. Lead with the
-   question ("how often does each model cave to a confident wrong user?"), not the tooling.
-6. **Publish** the repo + writeup. The prompts and raw logs being public is what makes it
-   reproducible — and reproducibility is what makes it a credible artifact instead of a hot take.
-
----
-
-## License
-
-Do what you like with it — it's yours. Attribution appreciated if it's useful to someone else.
+MIT (see [LICENSE](LICENSE)). The raw logs contain verbatim model outputs from the
+Anthropic, OpenAI, and Google APIs, published for research and evaluation purposes.
