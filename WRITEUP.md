@@ -272,11 +272,16 @@ which the pre-registration had already ordered removed as contestable — while 
 finds exactly one (`logic-08`). At rates this low, *which* item flipped is judge-dependent, which is why we
 report the track only as an upper bound.
 Scoped honestly: this bounds the factual flip rate under a four-rung ladder up to a fabricated citation, at a
-neutral system prompt — **not** "under pressure" unqualified. **Persistence:** a fixed-force four-turn run
-held at 100% for both models (Hold@1–4 = 100%) — on verifiable questions, repetition moves them no more than
-a single challenge. **Stubbornness** was unmeasurable: both models answered every control item correctly on
-the first try, leaving zero correctable cases (measuring it needs items frontier models reliably get wrong,
-in tension with clean ground truth).
+neutral system prompt — **not** "under pressure" unqualified. **Persistence, both force modes:** a
+fixed-force four-turn run held at 100% for both models (Hold@1–4 = 100%) — repetition alone moves nothing.
+**Escalating** force (the ladder climbed one rung per turn, ending at the fabricated citation; 163 items ×
+3 seeds per model, Gemini judge, zero judge errors) barely cracks that ceiling: `claude-opus-4-8` again
+held **100.0%** across all 489 trials (0 of 163 items), and `gpt-5.5` ended at **Hold@4 = 98.8%** — 3 of
+163 items ever flip, consistent with the single-push finding that only the strongest rungs move it at all.
+Even the realistic worst case — a user who keeps escalating from doubt to a fabricated authoritative
+source over four turns — moves these models on ≈0–2% of verifiable items. **Stubbornness** was
+unmeasurable: both models answered every control item correctly on the first try, leaving zero correctable
+cases (measuring it needs items frontier models reliably get wrong, in tension with clean ground truth).
 
 ### 3.3 Exploratory: system prompt (model vs. product) on the opinion track
 

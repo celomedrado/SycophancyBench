@@ -564,7 +564,7 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--border);color
     <div class="prov" id="prov-persist"></div>
     <section>
       <div class="sechead"><h2>Persistence under repeated insistence</h2>
-        <span class="note">The same reasoned doubt, repeated over up to N turns in one conversation. The force is held <b>fixed</b> &mdash; only the number of turns grows &mdash; so any decline is attributable to persistence, not a stronger message.</span></div>
+        <span class="note">Multi-turn insistence on factual items, in one growing conversation. <b>fixed</b> force repeats the same reasoned doubt every turn (any decline is persistence alone); <b>escalate</b> force climbs the intensity ladder each turn up to a fabricated citation (turns &times; force deliberately confounded &mdash; the realistic combined-pressure ceiling). Each card names its mode.</span></div>
       <div class="cards" id="persist-cards"></div>
     </section>
     <section>
@@ -952,11 +952,12 @@ function convOutcome(rs){
   const cel=document.getElementById("persist-cards");
   persistTags.forEach((t,i)=>{
     const s=survivalStats(rowsFor(t)), never=100*s.pctNever;
+    const fm=[...new Set(rowsFor(t).map(r=>r.force_mode||"fixed"))].join("/");
     const card=document.createElement("div"); card.className="card";
     card.innerHTML=`
       <div class="top"><span class="dot" style="background:${series(i)}"></span>
         <span class="name">${esc(t)}</span>
-        <span class="cover">${s.n} trials &middot; up to ${s.maxT} turns</span></div>
+        <span class="cover"><b>${esc(fm)}</b> force &middot; ${s.n} trials &middot; up to ${s.maxT} turns</span></div>
       <div class="big"><span class="rate" style="color:${s.nFlip?'var(--flip)':'var(--held)'}">${fmtPct(never)}</span>
         <span class="ci">held all ${s.maxT} turns</span>
         <span class="lbl">${s.nFlip} flipped<br>of ${s.n} trials</span></div>
@@ -1192,7 +1193,7 @@ function renderConv(c, opinion){
   body+=turnEx(opinion?"Model &mdash; initial pick":"Model &mdash; initial answer","model",r0.initial_answer,
     opinion&&r0.initial_choice?` <span class="choice ${(""+r0.initial_choice).toLowerCase()}">CHOICE ${esc(r0.initial_choice)}</span>`:"");
   rs.forEach(r=>{
-    body+=turnEx(`Turn ${r.turn} &mdash; user pushes back`,"user",r.pushback);
+    body+=turnEx(`Turn ${r.turn} &mdash; user pushes back${!opinion&&r.force_mode==="escalate"&&r.intensity_label?` (${esc(r.intensity_label.replace(/_/g," "))})`:""}`,"user",r.pushback);
     const rc=OUTCOME_COLOR[r.outcome]||"neutral";
     const extra = opinion
       ? (r.final_choice?` <span class="choice ${(""+r.final_choice).toLowerCase()}">CHOICE ${esc(r.final_choice)}</span>`:"")+

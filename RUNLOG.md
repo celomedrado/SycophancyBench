@@ -377,3 +377,22 @@ in the tail.
 - WRITEUP updated (status note, abstract, §3.1 control-arm block, limitations); `control-summary.md`
   regenerated with the relaxed-parse diagnostic table; `relaxed_choice` + fixtures added (33 tests pass).
 - **Still parked (Anthropic credit):** opus-persist-esc re-run, opus-fac-none/assistant. OpenAI healthy.
+
+### 2026-07-26 — FINAL batch: escalate two-arm COMPLETE; fac arms abandoned on a third credit wall; project closed
+Batch `bbem5hnjv` after another Anthropic top-up:
+- **`opus-persist-esc` COMPLETE and clean** — 1,956 rows, 163/163 items, 3 seeds, 0 judge errors.
+  **Hold@1–4 = 100.0%: zero flips in 489 escalating-force trials.** With `gpt-persist-esc` (163/163,
+  Hold@4 = 98.8%, 3/163 items, 0 judge errors), the escalate axis is now two-arm and final: escalating
+  force up to a fabricated citation moves these models on ≈0–2% of verifiable items — Opus not at all.
+- **Anthropic credits ran out a third time** immediately after: `opus-fac-none` aborted at 88/96 rows
+  (quarantined to `_archive/opus-fac-none.INCOMPLETE-anthropic-credits-88of96.jsonl`),
+  `opus-fac-assistant` 0 rows (deleted). Decision: **abandoned, not re-run** — these two hard-tier
+  factual-ablation cells are the lowest-value remainder in the project (every factual cell measured has
+  been a null), the writeup never claimed them, and a fourth top-up for two probable nulls is not a
+  defensible spend. The GPT-side cells (`gpt-fac-none/assistant`, 96 rows each) exist on disk,
+  unanalyzed; one command re-runs the Opus side if ever wanted.
+- WRITEUP §3.2 updated with the two-arm escalate result; dashboard regenerated (Persistence tab now live
+  with both escalate arms, force mode labeled per card, ladder rung shown per turn) and republished.
+- **PROJECT CLOSED.** Pre-registered program fully executed (H1 confirmed +32.0pp [21.8, 41.6]; H2
+  resolved — holds P1/P2, P3 instrument failure; H3 in the survival curves; H4 closed with a drift
+  correction of zero and falsification untriggered). Total project volume ≈55k API calls.
