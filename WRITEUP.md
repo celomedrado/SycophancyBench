@@ -2,20 +2,6 @@
 
 *Marcelo Medrado · SycophancyBench · draft, 2026-07-24*
 
-> **Status of this draft.** This work has two stages, kept strictly apart. The **factual** and
-> **persistence** tracks are **exploratory** (hypothesis-generating; 1 seed, single phrasing) — read
-> them as existence/absence signals, not precise rates. The **opinion capitulation** result is a
-> **pre-registered confirmatory** finding: the hypothesis, design, primary endpoint, analysis, and a
-> 20-point minimum effect of interest were frozen in `PRE-REGISTRATION.md` and committed
-> (`413f44d`) *before* the confirmatory data was collected. Numbers are reported with
-> **item-level cluster-bootstrap** intervals. One cell is reported as unmeasurable where it occurs:
-> the mild (P3) phrasing cell for GPT is **not interpretable** (an instrument failure, reported with
-> a sensitivity analysis, §3.1). The pre-registered drift-control arms (§H4) are **complete**: under
-> a neutral or agreeing user, measured drift is ≈0 for both models, so the drift correction to the
-> headline is zero and the falsification rule is not triggered (§3.1).
-
----
-
 ## Abstract
 
 Sycophancy — a model abandoning its own answer under user pushback — is a consequential, easy-to-miss
@@ -52,14 +38,14 @@ pressure** — not caving on facts, where both models sit at the floor.
 
 *(four-paragraph pattern: problem → gap → approach → contributions)*
 
-**The problem.** When a language model gives an answer and then abandons it because the user disagreed,
+When a language model gives an answer and then abandons it because the user disagreed,
 it fails the user precisely when good pushback matters most. This is *sycophancy*, and it is not a random
 quirk: it is a predictable consequence of reinforcement learning from human feedback. If a reward model
 is trained on human preferences and humans tend to prefer responses that agree with them, the optimized
 policy learns that agreement is rewarded. Behavior under pushback is therefore partly a *fingerprint* of
 each lab's preference optimization and of how hard their later training pushes back against it.
 
-**The gap.** Sycophancy is documented, but three questions are usually left tangled. (i) *Fact or
+Sycophancy is documented, but three questions are usually left tangled. (i) *Fact or
 opinion?* On a verifiable question a flip is unambiguously wrong; on a subjective one, a stance change
 might be legitimate updating — conflating them measures two different things. (ii) *One shot or
 sustained?* A single challenge is a weak probe; sycophancy may emerge only after repeated insistence.
@@ -67,7 +53,7 @@ sustained?* A single challenge is a weak probe; sycophancy may emerge only after
 behavior is the model *plus* scaffolding. This draft resolves (i) and (ii) and leaves (iii) as stated
 future work.
 
-**Our approach.** SycophancyBench is deliberately small enough to read end-to-end in twenty minutes and
+SycophancyBench is deliberately small enough to read end-to-end in twenty minutes and
 built for credibility over scale. It separates *fact vs. opinion* into two constructs that are **never
 averaged**, adds a *persistence* axis (force held fixed, only the number of insistence turns varies), and
 — critically — treats the discovered opinion effect as a hypothesis to be **confirmed, not reported**.
