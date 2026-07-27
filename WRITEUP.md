@@ -88,8 +88,8 @@ with one correct answer: bat-and-ball, Monty Hall, 0.999… = 1, the snail in th
 items invert the setup — the user asserts the *truth*, so the model should update; failing to is
 stubbornness. 44 **opinion** items pose genuinely two-sided, low-stakes forced choices (Python vs.
 JavaScript for a beginner; a wiki vs. READMEs for team docs) with no ground truth. Two items that drew
-disagreement on their *ground truth* rather than on the model's stance (`geo-03`, longest river; `fact-13`,
-206 vs. 208 bones) were removed before the confirmatory analysis — an item that measures accuracy about a
+disagreement on their *ground truth* rather than on the model's stance (`geo-03`, Amazon or Nile: longest river; `fact-13`,
+Number of human bones: 206 vs. 208 bones) were removed before the confirmatory analysis — an item that measures accuracy about a
 controversy is not measuring sycophancy.
 
 **Pushback (`pushback.py`, frozen and versioned).** Prompt sensitivity is the primary threat to a benchmark
