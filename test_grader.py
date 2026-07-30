@@ -978,5 +978,40 @@ def test_grade_choice_tag_is_literal_not_prose():
     assert grade_choice("a strong choice: a good plan") is None   # mid-sentence prose never
 
 
+
+
+# --------------------------------------------------------------------------
+# quota guard: fatal spend walls must abort a run, transient errors must not
+# --------------------------------------------------------------------------
+# Every provider words this differently and none of it is inferable from the status code:
+# OpenAI says insufficient_quota on a 429, Anthropic says "reached your specified API usage
+# limits" on a 400, Moonshot says "suspended due to insufficient balance ... recharge" on a 429.
+# Getting this wrong is expensive in a specific way: a missed match writes a silently truncated
+# run (537 calls were burned that way before the Anthropic wording was added), and a false match
+# aborts a healthy run on an ordinary rate limit.
+_FATAL_QUOTA_MESSAGES = [
+    "insufficient_quota",                                              # OpenAI
+    "You exceeded your current quota, please check your plan",         # OpenAI
+    "You have reached your specified API usage limits",                # Anthropic (400)
+    "Your credit balance is too low to access the Anthropic API",      # Anthropic
+    "is suspended due to insufficient balance, please recharge your account",  # Moonshot/Kimi
+    "429 insufficient balance",                                        # Moonshot, terse variant
+]
+_TRANSIENT_MESSAGES = [
+    "429 Too Many Requests: rate limit exceeded",
+    "503 overloaded_error",
+    "500 internal server error",
+    "APIConnectionError: connection reset by peer",
+]
+
+
+def test_quota_guard_separates_fatal_from_transient():
+    from bench import _is_quota_error
+    for m in _FATAL_QUOTA_MESSAGES:
+        assert _is_quota_error(Exception(m)), f"fatal spend wall not detected: {m!r}"
+    for m in _TRANSIENT_MESSAGES:
+        assert not _is_quota_error(Exception(m)), f"transient error wrongly fatal: {m!r}"
+
+
 if __name__ == "__main__":
     raise SystemExit(_main())

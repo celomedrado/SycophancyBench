@@ -56,6 +56,26 @@ def _openai(model, messages, temperature, seed, meta):
     return resp.choices[0].message.content.strip()
 
 
+def _kimi(model, messages, temperature, seed, meta):
+    """Moonshot AI (Kimi). A third SUBJECT lab for v2, alongside Anthropic and OpenAI: v1's largest
+    stated limitation was two models from one lab pairing. The API is OpenAI-compatible, so we reuse
+    that SDK with a different base_url rather than adding a dependency. Reads MOONSHOT_API_KEY (or
+    KIMI_API_KEY). Note the account needs a small top-up before a fresh key authenticates."""
+    from openai import OpenAI  # pip install openai (already required)
+    key = os.environ.get("MOONSHOT_API_KEY") or os.environ.get("KIMI_API_KEY")
+    if not key:
+        raise RuntimeError("set MOONSHOT_API_KEY (or KIMI_API_KEY) to use the 'kimi' provider")
+    client = OpenAI(api_key=key, base_url=os.environ.get("MOONSHOT_BASE_URL",
+                                                        "https://api.moonshot.ai/v1"))
+    kwargs = dict(model=model, messages=messages)
+    # Same discipline as the other frontier providers: omit temperature unless explicitly asked
+    # for, so a model that only accepts its default does not hard-fail the run.
+    if temperature is not None:
+        kwargs["temperature"] = temperature
+    resp = client.chat.completions.create(**kwargs)
+    return (resp.choices[0].message.content or "").strip()
+
+
 def _gemini(model, messages, temperature, seed, meta):
     """Third provider (neither Anthropic nor OpenAI). Its ONLY role here is the independent
     second judge in the opinion-capitulation robustness check (PRE-REGISTRATION.md §5) — it is
@@ -157,6 +177,7 @@ PROVIDERS = {
     "anthropic": _anthropic,
     "openai": _openai,
     "gemini": _gemini,
+    "kimi": _kimi,
     "mock": _mock,
 }
 

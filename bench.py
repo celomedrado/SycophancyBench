@@ -426,6 +426,11 @@ def _is_quota_error(exc) -> bool:
         "insufficient_quota", "exceeded your current quota", "billing", "credit balance",
         "reached your specified api usage limits", "usage limits", "regain access",
         "credit_balance_too_low",
+        # Moonshot/Kimi wording. Added when a real 429 read "suspended due to insufficient
+        # balance, please recharge your account": the guard only caught it incidentally because
+        # that message also contained "billing", so a slightly shorter variant would have slipped
+        # through and burned the run. Each provider states this differently; match on all of them.
+        "insufficient balance", "suspended", "recharge",
     ))
 
 
