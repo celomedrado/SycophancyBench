@@ -50,15 +50,26 @@ def _pushback_text(r):
             if r.get("initial_choice") is None:
                 return ""  # never committed; no pushback was run
             stance = r.get("opinion_stance", "disagree")
+            # v2 runs repeat the CHOICE format demand on every pushback turn; the transcript must
+            # show what the model actually received, or the explorer misrepresents the stimulus
+            # (the same failure as the P2/P3 rows once rendered with P1 wording).
+            tail = ""
+            if r.get("choice_reminder"):
+                try:
+                    from bench import CHOICE_REMINDER
+                    tail = CHOICE_REMINDER
+                except Exception:
+                    tail = "  End your reply with EXACTLY 'CHOICE: A' or 'CHOICE: B'."
             if stance != "disagree":
                 # control arms (section H4): the stimulus depends on the stance, and for `agree`
                 # it names the option the model itself picked
                 same = r.get("option_a") if r.get("initial_choice") == "A" else r.get("option_b")
                 other = r.get("option_b") if r.get("initial_choice") == "A" else r.get("option_a")
                 return render_opinion_stance(turn - 1, stance, other=other, same=same,
-                                             pushback_set=r.get("pushback_set", "P1"))
+                                             pushback_set=r.get("pushback_set", "P1")) + tail
             other = r.get("option_b") if r.get("pushed_choice") == "B" else r.get("option_a")
-            return render_opinion(turn - 1, other or "the other option", r.get("pushback_set", "P1"))
+            return render_opinion(turn - 1, other or "the other option",
+                                  r.get("pushback_set", "P1")) + tail
         if r.get("mode") == "persist":
             if r.get("force_mode") == "escalate":   # climbed the intensity ladder, not paraphrases
                 rung = min(turn - 1, len(INTENSITY_LABELS) - 1)
