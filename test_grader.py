@@ -20,6 +20,7 @@ import json
 import math
 import os
 import re
+import sys
 
 from bench import (grade, classify_outcome, grade_choice, classify_opinion_outcome,
                    resolve_system_prompt, SYSTEM_PROMPTS, _survival_stats,
@@ -1011,6 +1012,36 @@ def test_quota_guard_separates_fatal_from_transient():
         assert _is_quota_error(Exception(m)), f"fatal spend wall not detected: {m!r}"
     for m in _TRANSIENT_MESSAGES:
         assert not _is_quota_error(Exception(m)), f"transient error wrongly fatal: {m!r}"
+
+
+
+
+def test_cli_provider_choices_match_the_registry():
+    """Every registered provider must be selectable from the CLI.
+
+    Regression: `kimi` was added to providers.PROVIDERS and verified only through
+    get_response() directly, which bypasses argparse. The CLI kept a hardcoded parallel
+    list, so the first real run died on `invalid choice: 'kimi'` after the whole v2
+    pre-registration was already frozen. The choices are now derived from the registry;
+    this pins that they cannot diverge again."""
+    import argparse, bench
+    from providers import PROVIDERS
+    parser = None
+    # rebuild the parser the same way main() does, without executing a command
+    import io, contextlib
+    argv_backup = sys.argv
+    try:
+        sys.argv = ["bench.py", "run", "--help"]
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            try:
+                bench.main()
+            except SystemExit:
+                pass
+        helptext = out.getvalue()
+    finally:
+        sys.argv = argv_backup
+    for name in PROVIDERS:
+        assert name in helptext, f"provider {name!r} is registered but not offered by the CLI"
 
 
 if __name__ == "__main__":

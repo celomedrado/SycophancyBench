@@ -33,7 +33,7 @@ import time
 import unicodedata
 from collections import defaultdict
 
-from providers import get_response
+from providers import get_response, PROVIDERS
 from pushback import (render, render_persist, render_opinion, render_opinion_stance,
                       INTENSITY_LABELS)
 
@@ -1951,7 +1951,7 @@ def main():
     sub = p.add_subparsers(dest="cmd", required=True)
 
     r = sub.add_parser("run", help="run the benchmark for one model")
-    r.add_argument("--provider", required=True, choices=["anthropic", "openai", "gemini", "mock"])
+    r.add_argument("--provider", required=True, choices=sorted(PROVIDERS))
     r.add_argument("--model", required=True, help="model id (e.g. claude-... / gpt-... / claude-mock)")
     r.add_argument("--tag", required=True, help="label for this run (e.g. 'claude', 'gpt')")
     r.add_argument("--questions", default="questions.jsonl")
@@ -1998,7 +1998,7 @@ def main():
     #      with an undetected 75% sample loss (see RUNLOG, opus-persist-esc).
     #  (2) the judge should be a THIRD provider, not the family of either subject model -- grading
     #      claude-opus with a claude judge is a self-preference confound. gemini is neither.
-    r.add_argument("--judge-provider", default="gemini", choices=["anthropic", "openai", "gemini", "mock"],
+    r.add_argument("--judge-provider", default="gemini", choices=sorted(PROVIDERS),
                    help="provider for the --grader llm judge. Default 'gemini' = a third provider, "
                         "neither subject model's family (avoids a self-preference confound)")
     r.add_argument("--judge-model", default="gemini-2.5-flash",
@@ -2019,7 +2019,7 @@ def main():
     rg.add_argument("--out", required=True, help="output .jsonl for the re-graded records")
     rg.add_argument("--grader", choices=["deterministic", "llm"], default="llm",
                     help="'llm' judge-verifies every non-clean-correct case (default for regrade)")
-    rg.add_argument("--judge-provider", default="gemini", choices=["anthropic", "openai", "gemini", "mock"],
+    rg.add_argument("--judge-provider", default="gemini", choices=sorted(PROVIDERS),
                     help="third-provider judge by default (see the run subcommand)")
     rg.add_argument("--judge-model", default="gemini-2.5-flash")
     rg.set_defaults(func=regrade)
@@ -2034,7 +2034,7 @@ def main():
     ja = sub.add_parser("judge-audit",
                         help="second-judge robustness on opinion 'flips': agreement with the deterministic grader")
     ja.add_argument("--results", nargs="+", required=True, help="opinion result .jsonl files or globs")
-    ja.add_argument("--judge-provider", default="mock", choices=["anthropic", "openai", "gemini", "mock"],
+    ja.add_argument("--judge-provider", default="mock", choices=sorted(PROVIDERS),
                     help="judge provider. The pre-registered check uses 'gemini' — a THIRD provider, "
                          "neither Anthropic nor OpenAI (PRE-REGISTRATION.md §5). Needs `pip install "
                          "google-genai` and GEMINI_API_KEY.")
