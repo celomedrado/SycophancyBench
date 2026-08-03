@@ -8,8 +8,7 @@ a user pushes back *with no argument at all*. There are two tracks, deliberately
 **factual** track (questions with a right answer, where a flip is simply wrong) and an **opinion**
 track (subjective A/B picks, where the model states `CHOICE: A` or `CHOICE: B` and a scripted user
 just disagrees). **v1 is finished and published.** **v2 is a separate, newly pre-registered study**
-that swaps in current models and adds a third lab; only one v2 arm has been run so far, and it is
-still running.
+that swaps in current models and adds a third lab; one of its three primary arms is complete.
 
 | | |
 |---|---|
@@ -128,7 +127,7 @@ prompts**, so the headline is not an artifact of the neutral prompt.
 
 ---
 
-## 3. v2 — IN PROGRESS. One arm running, nothing else started.
+## 3. v2 — IN PROGRESS. One of three primary arms complete.
 
 v2 does **not** revise v1. v1's numbers stand. v2 is a new study with new subjects, frozen in
 `PRE-REGISTRATION-v2.md` at commit `ff1b2d6`, motivated by v1's two stated limitations: subjects one
