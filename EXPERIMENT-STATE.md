@@ -1,6 +1,6 @@
 # EXPERIMENT-STATE
 
-Snapshot for someone with zero context. Written 2026-08-02. Everything here was read out of
+Snapshot for someone with zero context. Written 2026-08-02, updated 2026-08-03. Everything here was read out of
 `results/*.jsonl` at that moment, not from memory.
 
 **One-paragraph orientation.** SycophancyBench asks whether a model abandons its stated answer when
@@ -141,9 +141,9 @@ still fourth-party to all three.
 MEI. Secondary: VH2 three-way spread, VH3 P2 robustness, VH4 control floor. The three pairwise
 contrasts are Holm-corrected.
 
-### Currently running
+### v2 arm 1 of 3: COMPLETE
 
-**`kimi-conf`** — the Kimi K3 P1 primary arm. Config:
+**`kimi-conf`** — Kimi K3, P1 primary arm. Config:
 
 ```
 --provider kimi --model kimi-k3 --tag kimi-conf --categories opinion
@@ -151,9 +151,21 @@ contrasts are Holm-corrected.
 --opinion-stance disagree --choice-reminder --swap-options --seeds 5 --max-turns 4
 ```
 
-Progress at snapshot: **253 of 440 conversations, 26 of 44 items, 978 rows.**
-Interim, **not** a final result: **no-tag 0 of 978 turns (0.0%)**, outcomes 966 held / 12 flipped.
-Kimi responds in ~13 s/call, so the arm takes 2–3 hours of wall clock.
+Complete and clean: 1,700 rows, **440/440 conversations, 44/44 items, 0 errors**.
+
+- **§V6 gate: PASS.** no-final-tag **0 of 1,700 turns (0.00%)**, limit 10%. Per-turn 0/440, 0/426,
+  0/417, 0/417 — no tail decay, which is the shape that failed GPT's mild register in v1. Kimi is a
+  valid v2 subject and its numbers are reportable.
+- **Result:** item-level capitulation **5.5% [3.2, 8.0]**, n=44 items. Hold@1–4 =
+  96.8 / 94.8 / 94.8 / 94.5%, median turns-to-cave 1, 24 of 440 conversations ever cave. Order-swap
+  identical (5.5% / 5.5%).
+- This validates the `choice_reminder` decision at scale: 0 parseable tags under both frozen v1
+  elicitations in the probe, 0% untagged across 1,700 turns with the reminder.
+
+**Read this arm carefully.** 5.5% is a *within-v2* number and feeds **VH2** (the three-way spread).
+It says nothing about **VH1**, which is the `gpt-5.6` vs `claude-opus-5` contrast and cannot be
+evaluated until both of those arms exist. It also must not be compared to any v1 rate: v1 had no
+per-turn reminder (see §4).
 
 **Nothing else in v2 has been run.** No Opus 5 arm, no GPT-5.6 arm, no v2 controls, no P2/P3.
 
@@ -199,12 +211,8 @@ reconstruction appends it, so the explorer shows the stimulus the model actually
 
 ## 5. Next three steps
 
-1. **Read the Kimi gate before anything else.** When `kimi-conf` finishes, compute its final no-tag
-   rate over all 440 conversations. Pre-registration §V6 binds the outcome: **≤10% → Kimi is a valid
-   subject; >10% → report Kimi as an instrument failure and exclude it from the confirmatory
-   contrasts**, rather than working around it. Report the gate result *before* quoting any Kimi
-   capitulation number, because the gate decides whether that number means anything. (Interim 0.0%
-   looks good, but the tail matters: GPT's untagged turns clustered on later turns and specific items.)
+1. ~~Read the Kimi gate.~~ **DONE 2026-08-03: PASS at 0.00% untagged.** Kimi is a valid subject;
+   capitulation 5.5% [3.2, 8.0]. The next arm is now the priority.
 
 2. **Run the other two v2 primary arms.** Blocked on one thing: `ANTHROPIC_API_KEY` is currently
    **unset** in `~/.zshenv` and Opus 5 needs it. OpenAI, Moonshot, and Gemini keys are live. Same

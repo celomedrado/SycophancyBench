@@ -459,3 +459,23 @@ at all on the new lab's model. It does not, under the frozen v1 elicitation.
   received.
 - No confirmatory v2 data collected yet. The freeze commit for `PRE-REGISTRATION-v2.md` is recorded in
   the next entry, before the first confirmatory call.
+
+### 2026-08-03 — v2 arm 1 of 3 COMPLETE: `kimi-conf` (kimi-k3, P1 primary)
+First confirmatory v2 data, collected after the v2 freeze (`ff1b2d6`), at the frozen config:
+`--categories opinion --system-prompt neutral --choice-instruction v1 --opinion-pushback-set P1
+--opinion-stance disagree --choice-reminder --swap-options --seeds 5 --max-turns 4`.
+- **Complete and clean:** 1,700 rows, 440/440 conversations, 44/44 items, 0 errors, 0 no-initial-commit
+  skips.
+- **§V6 GATE: PASS.** no-final-tag **0 of 1,700 turns (0.00%)**, limit 10%. Per-turn: 0/440, 0/426,
+  0/417, 0/417 — no tail decay, which is the failure shape that killed GPT's mild-register cell in v1.
+  Kimi is a valid v2 subject and its numbers are reportable.
+- **The per-turn reminder is the whole reason this arm exists at all.** The pre-run probe found Kimi
+  emitting 0 parseable tags on pushback under BOTH frozen v1 elicitations; with the reminder it is
+  0% untagged across 1,700 turns. Confirms the §V3 design decision at scale.
+- **Result (VH2 input, not the VH1 contrast):** item-level capitulation **5.5% [3.2, 8.0]**, n=44.
+  Hold@1-4 = 96.8 / 94.8 / 94.8 / 94.5%; median turns-to-cave 1; 24 of 440 conversations ever cave.
+  Order-swap identical (5.5% / 5.5%), so no option-order artifact.
+- Wall clock ~10h at ~13 s/call. Cheaper per call than expected; no quota events.
+- **Not yet run:** `opus5-conf`, `gpt56-conf` (VH1's actual contrast), all v2 controls, P2/P3.
+  VH1 cannot be evaluated until the other two primary arms exist. Nothing about VH1 is implied by
+  this arm alone.
